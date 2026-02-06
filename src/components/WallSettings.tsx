@@ -1,0 +1,154 @@
+'use client';
+
+import { useState } from 'react';
+
+export interface WallDimensions {
+  width: number;  // in cm
+  height: number; // in cm
+  unit: 'cm' | 'm' | 'ft';
+}
+
+interface WallSettingsProps {
+  wallDimensions: WallDimensions;
+  onDimensionsChange: (dimensions: WallDimensions) => void;
+}
+
+export default function WallSettings({ wallDimensions, onDimensionsChange }: WallSettingsProps) {
+  const [isExpanded, setIsExpanded] = useState(true);
+
+  const handleWidthChange = (value: string) => {
+    const num = parseFloat(value) || 0;
+    onDimensionsChange({ ...wallDimensions, width: num });
+  };
+
+  const handleHeightChange = (value: string) => {
+    const num = parseFloat(value) || 0;
+    onDimensionsChange({ ...wallDimensions, height: num });
+  };
+
+  const handleUnitChange = (unit: 'cm' | 'm' | 'ft') => {
+    // Convert current values to new unit
+    let newWidth = wallDimensions.width;
+    let newHeight = wallDimensions.height;
+    
+    // First convert to cm
+    if (wallDimensions.unit === 'm') {
+      newWidth *= 100;
+      newHeight *= 100;
+    } else if (wallDimensions.unit === 'ft') {
+      newWidth *= 30.48;
+      newHeight *= 30.48;
+    }
+    
+    // Then convert from cm to new unit
+    if (unit === 'm') {
+      newWidth /= 100;
+      newHeight /= 100;
+    } else if (unit === 'ft') {
+      newWidth /= 30.48;
+      newHeight /= 30.48;
+    }
+    
+    onDimensionsChange({
+      width: Math.round(newWidth * 100) / 100,
+      height: Math.round(newHeight * 100) / 100,
+      unit
+    });
+  };
+
+  // Calculate wall size in cm for display
+  const getWallInCm = () => {
+    let w = wallDimensions.width;
+    let h = wallDimensions.height;
+    if (wallDimensions.unit === 'm') {
+      w *= 100;
+      h *= 100;
+    } else if (wallDimensions.unit === 'ft') {
+      w *= 30.48;
+      h *= 30.48;
+    }
+    return { width: Math.round(w), height: Math.round(h) };
+  };
+
+  const wallCm = getWallInCm();
+
+  return (
+    <div className="space-y-3">
+      <button
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="flex items-center justify-between w-full text-sm font-medium text-gray-300"
+      >
+        <span className="flex items-center gap-2">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
+          </svg>
+          Wall Dimensions
+        </span>
+        <svg 
+          className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`} 
+          fill="none" stroke="currentColor" viewBox="0 0 24 24"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+
+      {isExpanded && (
+        <div className="space-y-3 p-3 bg-gray-800/50 rounded-lg border border-gray-700">
+          {/* Unit selector */}
+          <div className="flex gap-1">
+            {(['cm', 'm', 'ft'] as const).map((unit) => (
+              <button
+                key={unit}
+                onClick={() => handleUnitChange(unit)}
+                className={`flex-1 px-2 py-1 text-xs rounded transition-colors ${
+                  wallDimensions.unit === unit
+                    ? 'bg-violet-600 text-white'
+                    : 'bg-gray-700 text-gray-400 hover:bg-gray-600'
+                }`}
+              >
+                {unit}
+              </button>
+            ))}
+          </div>
+
+          {/* Width input */}
+          <div>
+            <label className="text-xs text-gray-500 mb-1 block">Width</label>
+            <div className="flex items-center gap-2">
+              <input
+                type="number"
+                value={wallDimensions.width || ''}
+                onChange={(e) => handleWidthChange(e.target.value)}
+                placeholder="Width"
+                className="flex-1 px-3 py-2 bg-gray-900 border border-gray-600 rounded-lg text-white text-sm focus:border-violet-500 focus:outline-none"
+              />
+              <span className="text-gray-400 text-sm w-8">{wallDimensions.unit}</span>
+            </div>
+          </div>
+
+          {/* Height input */}
+          <div>
+            <label className="text-xs text-gray-500 mb-1 block">Height</label>
+            <div className="flex items-center gap-2">
+              <input
+                type="number"
+                value={wallDimensions.height || ''}
+                onChange={(e) => handleHeightChange(e.target.value)}
+                placeholder="Height"
+                className="flex-1 px-3 py-2 bg-gray-900 border border-gray-600 rounded-lg text-white text-sm focus:border-violet-500 focus:outline-none"
+              />
+              <span className="text-gray-400 text-sm w-8">{wallDimensions.unit}</span>
+            </div>
+          </div>
+
+          {/* Wall size info */}
+          {wallCm.width > 0 && wallCm.height > 0 && (
+            <div className="text-xs text-gray-500 pt-2 border-t border-gray-700">
+              Wall: {wallCm.width} × {wallCm.height} cm
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
