@@ -1,18 +1,21 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import ImageUploader from '@/components/ImageUploader';
-import PageSizeSelector from '@/components/PageSizeSelector';
-import CollageEditor from '@/components/CollageEditor';
-import ExportPanel from '@/components/ExportPanel';
-import WallSettings, { WallDimensions } from '@/components/WallSettings';
-import { splitImage } from '@/lib/image-splitter';
-import { calculateOptimalImageSize, rescaleImage } from '@/lib/dimension-calculator';
-import { PAGE_SIZES, SplitPage, PageSize } from '@/types';
+import { useState } from "react";
+import ImageUploader from "@/components/ImageUploader";
+import PageSizeSelector from "@/components/PageSizeSelector";
+import CollageEditor from "@/components/CollageEditor";
+import ExportPanel from "@/components/ExportPanel";
+import WallSettings, { WallDimensions } from "@/components/WallSettings";
+import { splitImage } from "@/lib/image-splitter";
+import {
+  calculateOptimalImageSize,
+  rescaleImage,
+} from "@/lib/dimension-calculator";
+import { PAGE_SIZES, SplitPage, PageSize } from "@/types";
 
 export default function Home() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [selectedSizeKey, setSelectedSizeKey] = useState<string>('A4');
+  const [selectedSizeKey, setSelectedSizeKey] = useState<string>("A4");
   const [pages, setPages] = useState<SplitPage[]>([]);
   const [rows, setRows] = useState(0);
   const [cols, setCols] = useState(0);
@@ -21,22 +24,31 @@ export default function Home() {
   const [wallDimensions, setWallDimensions] = useState<WallDimensions>({
     width: 0,
     height: 0,
-    unit: 'cm',
+    unit: "cm",
   });
-  const [originalImageDimensions, setOriginalImageDimensions] = useState<{ width: number; height: number } | null>(null);
+  const [originalImageDimensions, setOriginalImageDimensions] = useState<{
+    width: number;
+    height: number;
+  } | null>(null);
   const [scaleFactor, setScaleFactor] = useState(1);
+  const [isApplyingWallDimensions, setIsApplyingWallDimensions] =
+    useState(false);
 
   const selectedPageSize: PageSize = PAGE_SIZES[selectedSizeKey];
 
   const handleImageSelect = async (file: File) => {
     setSelectedFile(file);
     setPreviewUrl(URL.createObjectURL(file));
-    
+
     // Auto-split when image is selected
     await handleSplit(file, selectedSizeKey, null);
   };
 
-  const handleSplit = async (file: File, sizeKey: string, wallDims: WallDimensions | null) => {
+  const handleSplit = async (
+    file: File,
+    sizeKey: string,
+    wallDims: WallDimensions | null,
+  ) => {
     setIsProcessing(true);
     try {
       const reader = new FileReader();
@@ -56,7 +68,7 @@ export default function Home() {
               img.width,
               img.height,
               wallDims,
-              PAGE_SIZES[sizeKey]
+              PAGE_SIZES[sizeKey],
             );
             newScaleFactor = optimalSize.scaleFactor;
             setScaleFactor(newScaleFactor);
@@ -65,13 +77,13 @@ export default function Home() {
             const rescaledDataUrl = await rescaleImage(
               e.target?.result as string,
               optimalSize.targetWidth,
-              optimalSize.targetHeight
+              optimalSize.targetHeight,
             );
 
             // Create a blob from the rescaled image for splitting
             const response = await fetch(rescaledDataUrl);
             const blob = await response.blob();
-            fileToSplit = new File([blob], file.name, { type: 'image/png' });
+            fileToSplit = new File([blob], file.name, { type: "image/png" });
             scaledPreviewUrl = rescaledDataUrl;
           } else {
             setScaleFactor(1);
@@ -87,18 +99,18 @@ export default function Home() {
           setCols(result.cols);
         };
         img.onerror = () => {
-          console.error('Failed to load image');
+          console.error("Failed to load image");
           setIsProcessing(false);
         };
         img.src = e.target?.result as string;
       };
       reader.onerror = () => {
-        console.error('Failed to read file');
+        console.error("Failed to read file");
         setIsProcessing(false);
       };
       reader.readAsDataURL(file);
     } catch (error) {
-      console.error('Split failed:', error);
+      console.error("Split failed:", error);
     } finally {
       setIsProcessing(false);
     }
@@ -112,9 +124,14 @@ export default function Home() {
   };
 
   const handleWallDimensionsChange = async (dimensions: WallDimensions) => {
-    setWallDimensions(dimensions);
-    if (selectedFile) {
-      await handleSplit(selectedFile, selectedSizeKey, dimensions);
+    setIsApplyingWallDimensions(true);
+    try {
+      setWallDimensions(dimensions);
+      if (selectedFile) {
+        await handleSplit(selectedFile, selectedSizeKey, dimensions);
+      }
+    } finally {
+      setIsApplyingWallDimensions(false);
     }
   };
 
@@ -127,7 +144,7 @@ export default function Home() {
     setWallDimensions({
       width: 0,
       height: 0,
-      unit: 'cm',
+      unit: "cm",
     });
     setOriginalImageDimensions(null);
     setScaleFactor(1);
@@ -140,23 +157,45 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center">
-              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
+              <svg
+                className="w-6 h-6 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"
+                />
               </svg>
             </div>
             <div>
               <h1 className="text-xl font-bold">Image Splitter</h1>
-              <p className="text-xs text-gray-400">Split images into printable pages</p>
+              <p className="text-xs text-gray-400">
+                Split images into printable pages
+              </p>
             </div>
           </div>
-          
+
           {pages.length > 0 && (
             <button
               onClick={handleReset}
               className="px-4 py-2 text-sm bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors flex items-center gap-2"
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 4v16m8-8H4"
+                />
               </svg>
               New Image
             </button>
@@ -172,13 +211,17 @@ export default function Home() {
               Split Your Image Into Pages
             </h2>
             <p className="text-gray-400 text-lg">
-              Upload an image and split it into printable A4, A3, or custom size pages
+              Upload an image and split it into printable A4, A3, or custom size
+              pages
             </p>
           </div>
 
           <div className="space-y-8">
-            <ImageUploader onImageSelect={handleImageSelect} />
-            
+            <ImageUploader
+              onImageSelect={handleImageSelect}
+              isLoading={isProcessing}
+            />
+
             <PageSizeSelector
               selectedSize={selectedSizeKey}
               onSizeChange={setSelectedSizeKey}
@@ -197,9 +240,24 @@ export default function Home() {
 
             {isProcessing && (
               <div className="flex items-center justify-center gap-3 py-8">
-                <svg className="w-6 h-6 animate-spin text-violet-500" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                <svg
+                  className="w-6 h-6 animate-spin text-violet-500"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  />
                 </svg>
                 <span className="text-gray-300">Splitting image...</span>
               </div>
@@ -243,6 +301,7 @@ export default function Home() {
               <WallSettings
                 wallDimensions={wallDimensions}
                 onDimensionsChange={handleWallDimensionsChange}
+                isApplying={isApplyingWallDimensions}
               />
 
               {/* Export Panel */}
