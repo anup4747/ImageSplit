@@ -9,7 +9,6 @@ import {
   Download,
   Zap,
   Palette,
-  Code,
   Github,
   Mail,
   Play,
@@ -69,15 +68,6 @@ export default function Portfolio() {
     { step: '02', title: 'Choose Template', description: 'Pick a theme or let AI create one' },
     { step: '03', title: 'Customize', description: 'Adjust panels and preview in real-time' },
     { step: '04', title: 'Download', description: 'Get your printable wall art panels' },
-  ];
-
-  const techStack = [
-    { name: 'Next.js', description: 'React framework for production' },
-    { name: 'Tailwind CSS', description: 'Utility-first CSS framework' },
-    { name: 'Framer Motion', description: 'Animation library for React' },
-    { name: 'Canvas API', description: 'Image processing and manipulation' },
-    { name: 'AI Engine', description: 'Prompt-based layout generation' },
-    { name: 'PDF/JSZip', description: 'Export and compression tools' },
   ];
 
   return (
@@ -150,7 +140,7 @@ export default function Portfolio() {
 
           <motion.div
             className="absolute bottom-8 left-1/2 transform -translate-x-1/2"
-            animate={{ y: [0, 10, 0] }}
+            animate={{ y: [120, 105, 120] }}
             transition={{ duration: 2, repeat: Infinity }}
           >
             <ChevronDown className="w-6 h-6 text-gray-400" />
@@ -315,7 +305,7 @@ export default function Portfolio() {
         </div>
       </section>
 
-      {/* Technology Stack */}
+      {/* Gallery Showcase */}
       <section className="py-24 px-6 bg-black/20">
         <div className="max-w-7xl mx-auto">
           <motion.div
@@ -329,27 +319,49 @@ export default function Portfolio() {
               className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent"
               variants={fadeInUp}
             >
-              Technology Stack
+              Gallery Showcase
             </motion.h2>
+            <motion.p
+              className="text-xl text-gray-300 max-w-3xl mx-auto"
+              variants={fadeInUp}
+            >
+              Explore stunning wall art creations from our community
+            </motion.p>
           </motion.div>
 
           <motion.div
-            className="grid md:grid-cols-3 gap-6"
+            className="grid md:grid-cols-2 lg:grid-cols-4 gap-6"
             variants={stagger}
             initial="initial"
             whileInView="animate"
             viewport={{ once: true }}
           >
-            {techStack.map((tech, index) => (
+            {[
+              { title: 'Mountain Landscape', category: 'Nature' },
+              { title: 'Urban Architecture', category: 'City' },
+              { title: 'Family Moments', category: 'Personal' },
+              { title: 'Sunset Vibes', category: 'Travel' },
+              { title: 'Ocean Waves', category: 'Nature' },
+              { title: 'Abstract Art', category: 'Creative' },
+              { title: 'Pet Portraits', category: 'Personal' },
+              { title: 'Street Photography', category: 'City' },
+            ].map((item, index) => (
               <motion.div
                 key={index}
-                className="bg-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/10 hover:bg-white/10 transition-all duration-300"
+                className="group relative overflow-hidden rounded-xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 border border-white/10 cursor-pointer"
                 variants={fadeInUp}
-                whileHover={{ scale: 1.02 }}
+                whileHover={{ scale: 1.05 }}
               >
-                <Code className="w-8 h-8 text-blue-400 mb-3" />
-                <h3 className="text-lg font-semibold mb-2 text-white">{tech.name}</h3>
-                <p className="text-gray-400 text-sm">{tech.description}</p>
+                <div className="aspect-square bg-gradient-to-br from-gray-700 to-gray-800 flex items-center justify-center relative overflow-hidden">
+                  <Image className="w-12 h-12 text-gray-500" />
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-4"
+                    whileHover={{ opacity :1 }}
+                  >
+                    <h3 className="text-white font-semibold">{item.title}</h3>
+                    <p className="text-gray-300 text-sm">{item.category}</p>
+                  </motion.div>
+                </div>
               </motion.div>
             ))}
           </motion.div>
