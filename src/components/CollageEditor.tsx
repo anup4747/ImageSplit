@@ -159,14 +159,14 @@ export default function CollageEditor({ pages, pageSize, onPagesChange }: Collag
   return (
     <div className="flex flex-col h-full">
       {/* Toolbar */}
-      <div className="flex items-center justify-between px-4 py-3 bg-gray-800/50 border-b border-gray-700">
+      <div className="flex items-center justify-between px-4 py-3 bg-gray-200/50 border-b border-gray-300">
         <div className="flex items-center gap-2">
           <button
             onClick={handleUndo}
             disabled={!canUndo}
             aria-label="Undo last change (Ctrl+Z)"
             aria-disabled={!canUndo}
-            className={`px-3 py-1.5 text-sm rounded-lg transition-colors flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-blue-400 ${canUndo ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-800 text-gray-500 cursor-not-allowed'}`}
+            className={`px-3 py-1.5 text-sm rounded-lg transition-colors flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-blue-400 ${canUndo ? 'bg-white hover:bg-slate-50' : 'bg-slate-200 text-slate-500 cursor-not-allowed'}`}
           >
             Undo
           </button>
@@ -175,7 +175,7 @@ export default function CollageEditor({ pages, pageSize, onPagesChange }: Collag
             disabled={!canRedo}
             aria-label="Redo last change (Ctrl+Shift+Z)"
             aria-disabled={!canRedo}
-            className={`px-3 py-1.5 text-sm rounded-lg transition-colors flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-blue-400 ${canRedo ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-800 text-gray-500 cursor-not-allowed'}`}
+            className={`px-3 py-1.5 text-sm rounded-lg transition-colors flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-blue-400 ${canRedo ? 'bg-white hover:bg-gray-100' : 'bg-gray-200 text-gray-500 cursor-not-allowed'}`}
           >
             Redo
           </button>
@@ -198,7 +198,7 @@ export default function CollageEditor({ pages, pageSize, onPagesChange }: Collag
           <button
             onClick={handleArrangeGrid}
             aria-label="Arrange pages in a grid layout"
-            className="px-3 py-1.5 text-sm bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="px-3 py-1.5 text-sm bg-white hover:bg-gray-100 rounded-lg transition-colors flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
@@ -241,7 +241,7 @@ export default function CollageEditor({ pages, pageSize, onPagesChange }: Collag
           <button
             onClick={() => setScale(1)}
             aria-label="Reset zoom to 100%"
-            className="px-2 py-1 text-xs bg-gray-700 hover:bg-gray-600 rounded transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="px-2 py-1 text-xs bg-white hover:bg-gray-100 rounded transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400"
           >
             Reset
           </button>
