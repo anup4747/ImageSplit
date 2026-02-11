@@ -1,431 +1,338 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import {
   ArrowRight,
   Sparkles,
-  Image,
+  Image as ImageIcon,
   Download,
   Zap,
   Palette,
   Github,
   Mail,
   Play,
-  Star,
   ChevronDown,
+  Layers,
+  Crop,
+  Share2,
 } from 'lucide-react';
 import Link from 'next/link';
 
 export default function Portfolio() {
-  const [isVisible, setIsVisible] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
   const { scrollYProgress } = useScroll();
-  const y = useTransform(scrollYProgress, [0, 1], ['0%', '50%']);
+  const y = useTransform(scrollYProgress, [0, 1], ['0%', '30%']);
+  const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
 
   useEffect(() => {
-    setIsVisible(true);
+    setIsMounted(true);
   }, []);
 
   const fadeInUp = {
-    initial: { opacity: 0, y: 60 },
+    initial: { opacity: 0, y: 40 },
     animate: { opacity: 1, y: 0 },
-    transition: { duration: 0.6 },
+    transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] },
   };
 
   const stagger = {
     animate: {
       transition: {
-        staggerChildren: 0.1,
+        staggerChildren: 0.15,
       },
     },
   };
 
-  const features = [
-    {
-      icon: <Image className="w-8 h-8" />,
-      title: 'Template-Based Splitting',
-      description: 'Choose from curated themes like Love, Bike, Cafe, Travel, and more',
-    },
-    {
-      icon: <Sparkles className="w-8 h-8" />,
-      title: 'AI Template Generator',
-      description: 'Create custom split layouts with AI prompts and your creativity',
-    },
-    {
-      icon: <Palette className="w-8 h-8" />,
-      title: 'Custom Panel Resizing',
-      description: 'Fine-tune each panel size and position for perfect wall art',
-    },
-    {
-      icon: <Download className="w-8 h-8" />,
-      title: 'Export Options',
-      description: 'Download as ZIP of individual panels or PDF print sheets',
-    },
-  ];
-
-  const steps = [
-    { step: '01', title: 'Upload Image', description: 'Drop your favorite photo or artwork' },
-    { step: '02', title: 'Choose Template', description: 'Pick a theme or let AI create one' },
-    { step: '03', title: 'Customize', description: 'Adjust panels and preview in real-time' },
-    { step: '04', title: 'Download', description: 'Get your printable wall art panels' },
-  ];
+  if (!isMounted) return null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white overflow-x-hidden">
+    <div className="min-h-screen bg-slate-950 text-slate-50 overflow-x-hidden font-sans selection:bg-indigo-500/30">
+      {/* Dynamic Background */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-indigo-600/10 blur-[120px]" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-pink-600/10 blur-[120px]" />
+      </div>
+
       {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center px-6">
-        <motion.div
-          className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-purple-600/20"
-          style={{ y }}
-        />
+      <section className="relative min-h-screen flex items-center justify-center px-6 pt-20">
+        <motion.div style={{ y, opacity }} className="absolute inset-0 -z-10">
+           <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-[0.03] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))]" />
+        </motion.div>
+
         <div className="relative z-10 max-w-7xl mx-auto text-center">
           <motion.div
-            initial={{ opacity: 0, scale: 0.5 }}
+            initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8 }}
-            className="mb-8"
+            transition={{ duration: 1, ease: "easeOut" }}
+            className="mb-10 inline-block"
           >
-            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 mb-6">
-              <Sparkles className="w-4 h-4 text-yellow-400" />
-              <span className="text-sm font-medium">AI-Powered Image Splitting</span>
+            <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-md shadow-lg shadow-indigo-500/10">
+              <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
+              <span className="text-xs font-medium tracking-wide text-indigo-200 uppercase">
+                Next-Gen Wall Art Studio
+              </span>
             </div>
           </motion.div>
 
           <motion.h1
-            className="text-6xl md:text-8xl font-bold mb-6 bg-gradient-to-r from-white via-blue-200 to-purple-200 bg-clip-text text-transparent"
-            initial={{ opacity: 0, y: 50 }}
+            className="text-5xl md:text-7xl lg:text-8xl font-bold mb-8 tracking-tight leading-[1.1]"
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
           >
-            Image Splitting
+            <span className="bg-gradient-to-b from-white to-slate-400 bg-clip-text text-transparent">
+              Elevate Your Space
+            </span>
             <br />
-            Wallframe
+            <span className="bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+              With Precision
+            </span>
           </motion.h1>
 
           <motion.p
-            className="text-xl md:text-2xl text-gray-300 mb-12 max-w-3xl mx-auto leading-relaxed"
-            initial={{ opacity: 0, y: 50 }}
+            className="text-lg md:text-2xl text-slate-400 mb-12 max-w-3xl mx-auto leading-relaxed font-light"
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
           >
-            Transform your images into stunning multi-panel wall art. Choose from themed templates
-            or let AI create custom split layouts for your perfect printable wallframe.
+            Transform sophisticated imagery into gallery-grade multi-panel masterpieces.
+            Intelligent splitting, seamless layouts, and print-ready exports defined by precision.
           </motion.p>
 
           <motion.div
-            className="flex flex-col sm:flex-row gap-4 justify-center items-center"
-            initial={{ opacity: 0, y: 50 }}
+            className="flex flex-col sm:flex-row gap-6 justify-center items-center"
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.6 }}
-          >
+            >
             <Link href="/upload">
               <motion.button
-                className="group bg-gradient-to-r cursor-pointer from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white px-8 py-4 rounded-full font-semibold text-lg flex items-center gap-3 transition-all duration-300 shadow-2xl shadow-blue-500/25"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                Get Started
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </motion.button>
-            </Link>
-            <motion.button
-              className="group bg-white/10 backdrop-blur-sm cursor-pointer hover:bg-white/20 text-white px-8 py-4 rounded-full font-semibold text-lg flex items-center gap-3 transition-all duration-300 border border-white/20"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <Play className="w-5 h-5" />
-              View Demo
-            </motion.button>
-          </motion.div>
-
-          <motion.div
-            className="absolute bottom-8 left-1/2 transform -translate-x-1/2"
-            animate={{ y: [120, 105, 120] }}
-            transition={{ duration: 2, repeat: Infinity }}
-          >
-            <ChevronDown className="w-6 h-6 text-gray-400" />
-          </motion.div>
-        </div>
-      </section>
-
-      {/* About Section */}
-      <section className="py-24 px-6">
-        <div className="max-w-7xl mx-auto">
-          <motion.div
-            className="text-center mb-16"
-            variants={stagger}
-            initial="initial"
-            whileInView="animate"
-            viewport={{ once: true }}
-          >
-            <motion.h2
-              className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent"
-              variants={fadeInUp}
-            >
-              What is Image Splitting Wallframe?
-            </motion.h2>
-            <motion.p
-              className="text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed"
-              variants={fadeInUp}
-            >
-              A revolutionary web application that transforms single images into multi-panel wall
-              art layouts. Perfect for photographers, artists, and design enthusiasts who want to
-              create stunning, printable wall installations from their favorite images.
-            </motion.p>
-          </motion.div>
-
-          <motion.div
-            className="grid md:grid-cols-2 gap-12 items-center"
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
-          >
-            <div className="space-y-6">
-              <h3 className="text-3xl font-bold text-white">Why Choose Wallframe?</h3>
-              <ul className="space-y-4 text-gray-300">
-                <li className="flex items-start gap-3">
-                  <Star className="w-6 h-6 text-yellow-400 mt-0.5 flex-shrink-0" />
-                  <span>Create professional wall art from any image</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <Star className="w-6 h-6 text-yellow-400 mt-0.5 flex-shrink-0" />
-                  <span>AI-powered custom layout generation</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <Star className="w-6 h-6 text-yellow-400 mt-0.5 flex-shrink-0" />
-                  <span>Print-ready PDF and individual panel exports</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <Star className="w-6 h-6 text-yellow-400 mt-0.5 flex-shrink-0" />
-                  <span>Real-time preview and customization</span>
-                </li>
-              </ul>
-            </div>
-            <div className="relative">
-              <motion.div
-                className="bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-2xl p-8 backdrop-blur-sm border border-white/10"
+                className="group relative px-8 py-4 bg-white text-slate-900 rounded-full font-semibold text-lg overflow-hidden shadow-[0_0_40px_-10px_rgba(255,255,255,0.3)] hover:shadow-[0_0_60px_-15px_rgba(255,255,255,0.5)] transition-all duration-300"
                 whileHover={{ scale: 1.02 }}
-                transition={{ duration: 0.3 }}
+                whileTap={{ scale: 0.98 }}
               >
-                <div className="grid grid-cols-2 gap-4">
-                  {[1, 2, 3, 4].map((i) => (
-                    <motion.div
-                      key={i}
-                      className="aspect-square bg-gradient-to-br cursor-pointer from-gray-700 to-gray-800 rounded-lg flex items-center justify-center"
-                      whileHover={{ scale: 1.05 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <Image className="w-8 h-8 text-gray-400" />
-                    </motion.div>
-                  ))}
-                </div>
-              </motion.div>
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section className="py-24 px-6 bg-black/20">
-        <div className="max-w-7xl mx-auto">
-          <motion.div
-            className="text-center mb-16"
-            variants={stagger}
-            initial="initial"
-            whileInView="animate"
-            viewport={{ once: true }}
-          >
-            <motion.h2
-              className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent"
-              variants={fadeInUp}
-            >
-              Powerful Features
-            </motion.h2>
-          </motion.div>
-
-          <motion.div
-            className="grid md:grid-cols-2 lg:grid-cols-4 gap-8"
-            variants={stagger}
-            initial="initial"
-            whileInView="animate"
-            viewport={{ once: true }}
-          >
-            {features.map((feature, index) => (
-              <motion.div
-                key={index}
-                className="bg-white/5 cursor-pointer backdrop-blur-sm rounded-2xl p-6 border border-white/10 hover:bg-white/10 transition-all duration-300"
-                variants={fadeInUp}
-                whileHover={{ y: -5 }}
-              >
-                <div className="text-blue-400 mb-4">{feature.icon}</div>
-                <h3 className="text-xl font-semibold mb-3 text-white">{feature.title}</h3>
-                <p className="text-gray-400 leading-relaxed">{feature.description}</p>
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
-      </section>
-
-      {/* How It Works */}
-      <section className="py-24 px-6">
-        <div className="max-w-7xl mx-auto">
-          <motion.div
-            className="text-center mb-16"
-            variants={stagger}
-            initial="initial"
-            whileInView="animate"
-            viewport={{ once: true }}
-          >
-            <motion.h2
-              className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent"
-              variants={fadeInUp}
-            >
-              How It Works
-            </motion.h2>
-          </motion.div>
-
-          <motion.div
-            className="grid md:grid-cols-4 gap-8"
-            variants={stagger}
-            initial="initial"
-            whileInView="animate"
-            viewport={{ once: true }}
-          >
-            {steps.map((step, index) => (
-              <motion.div key={index} className="text-center" variants={fadeInUp}>
-                <div className="bg-gradient-to-br from-blue-600 to-purple-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-white font-bold text-lg">
-                  {step.step}
-                </div>
-                <h3 className="text-xl font-semibold mb-2 text-white">{step.title}</h3>
-                <p className="text-gray-400">{step.description}</p>
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Gallery Showcase */}
-      <section className="py-24 px-6 bg-black/20">
-        <div className="max-w-7xl mx-auto">
-          <motion.div
-            className="text-center mb-16"
-            variants={stagger}
-            initial="initial"
-            whileInView="animate"
-            viewport={{ once: true }}
-          >
-            <motion.h2
-              className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent"
-              variants={fadeInUp}
-            >
-              Gallery Showcase
-            </motion.h2>
-            <motion.p
-              className="text-xl text-gray-300 max-w-3xl mx-auto"
-              variants={fadeInUp}
-            >
-              Explore stunning wall art creations from our community
-            </motion.p>
-          </motion.div>
-
-          <motion.div
-            className="grid md:grid-cols-2 lg:grid-cols-4 gap-6"
-            variants={stagger}
-            initial="initial"
-            whileInView="animate"
-            viewport={{ once: true }}
-          >
-            {[
-              { title: 'Mountain Landscape', category: 'Nature' },
-              { title: 'Urban Architecture', category: 'City' },
-              { title: 'Family Moments', category: 'Personal' },
-              { title: 'Sunset Vibes', category: 'Travel' },
-              { title: 'Ocean Waves', category: 'Nature' },
-              { title: 'Abstract Art', category: 'Creative' },
-              { title: 'Pet Portraits', category: 'Personal' },
-              { title: 'Street Photography', category: 'City' },
-            ].map((item, index) => (
-              <motion.div
-                key={index}
-                className="group relative overflow-hidden rounded-xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 border border-white/10 cursor-pointer"
-                variants={fadeInUp}
-                whileHover={{ scale: 1.05 }}
-              >
-                <div className="aspect-square bg-gradient-to-br from-gray-700 to-gray-800 flex items-center justify-center relative overflow-hidden">
-                  <Image className="w-12 h-12 text-gray-500" />
-                  <motion.div
-                    className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-4"
-                    whileHover={{ opacity :1 }}
-                  >
-                    <h3 className="text-white font-semibold">{item.title}</h3>
-                    <p className="text-gray-300 text-sm">{item.category}</p>
-                  </motion.div>
-                </div>
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-24 px-6">
-        <div className="max-w-4xl mx-auto text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
-          >
-            <h2 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
-              Ready to Create Wall Art?
-            </h2>
-            <p className="text-xl text-gray-300 mb-12 max-w-2xl mx-auto">
-              Start transforming your images into beautiful multi-panel wallframes today.
-            </p>
-            <Link href="/upload">
-              <motion.button
-                className="group bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white px-12 py-6 rounded-full font-semibold text-xl flex items-center gap-3 mx-auto transition-all duration-300 shadow-2xl shadow-blue-500/25 cursor-pointer"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                Start Creating
-                <Zap className="w-6 h-6 group-hover:rotate-12 transition-transform" />
+                <span className="relative z-10 flex items-center gap-2">
+                  start creating
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
+                </span>
               </motion.button>
             </Link>
           </motion.div>
         </div>
+
+        <motion.div
+          className="absolute bottom-10 left-1/2 -translate-x-1/2"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.2, duration: 1 }}
+        >
+          <motion.div
+            animate={{ y: [0, 8, 0] }}
+            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+          >
+            <ChevronDown className="w-6 h-6 text-slate-600" />
+          </motion.div>
+        </motion.div>
       </section>
+
+      {/* Philosophy Section */}
+      <section className="py-32 px-6 bg-slate-950">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid lg:grid-cols-2 gap-20 items-center">
+            <motion.div
+              initial={{ opacity: 0, x: -50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8 }}
+            >
+              <h2 className="text-3xl md:text-5xl font-bold mb-6 text-white">
+                The Art of <br />
+                <span className="text-indigo-400">Deconstruction</span>
+              </h2>
+              <p className="text-lg text-slate-400 leading-relaxed mb-8">
+                We believe that a single image can tell a grander story when given space to breathe.
+                Our platform isn't just a tool; it's a creative studio that empowers you to
+                reimagine your photography as immersive architectural elements.
+              </p>
+              <ul className="space-y-4">
+                {[
+                  "Gallery-quality resolution retention",
+                  "AI-assisted composition analysis",
+                  "Calibrated for professional printing"
+                ].map((item, i) => (
+                  <li key={i} className="flex items-center gap-3 text-slate-300">
+                    <div className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </motion.div>
+
+            <motion.div
+              className="relative"
+              initial={{ opacity: 0, x: 50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8 }}
+            >
+              <div className="aspect-[4/3] rounded-2xl overflow-hidden bg-gradient-to-br from-indigo-500/10 to-purple-500/10 border border-white/5 backdrop-blur-sm p-8 relative">
+                 <div className="absolute inset-0 bg-grid-white/[0.02]" />
+                 <div className="grid grid-cols-2 gap-4 h-full">
+                    <div className="bg-slate-800/50 rounded-lg animate-pulse" />
+                    <div className="grid grid-rows-2 gap-4">
+                        <div className="bg-slate-800/30 rounded-lg" />
+                        <div className="bg-slate-800/30 rounded-lg" />
+                    </div>
+                 </div>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* Features Grid */}
+      <section className="py-32 px-6 relative overflow-hidden">
+        <div className="absolute inset-0 bg-indigo-950/20" />
+        <div className="max-w-7xl mx-auto relative z-10">
+          <motion.div
+            className="text-center mb-20"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+          >
+            <h2 className="text-3xl md:text-5xl font-bold mb-6">Designed for Perfectionists</h2>
+            <p className="text-slate-400 max-w-2xl mx-auto text-lg">
+              A suite of professional tools crafted to give you absolute control over your wall art.
+            </p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[
+              {
+                icon: <Layers className="w-6 h-6" />,
+                title: "Smart Segmentation",
+                desc: "Intelligent algorithms that respect focal points and image composition while splitting."
+              },
+              {
+                icon: <Sparkles className="w-6 h-6" />,
+                title: "AI Layout Engine",
+                desc: "Generative layout suggestions based on the unique geometry of your image."
+              },
+              {
+                icon: <Crop className="w-6 h-6" />,
+                title: "Precision Cropping",
+                desc: "Lossless cropping and resizing to ensure every panel is print-perfect."
+              },
+              {
+                icon: <Palette className="w-6 h-6" />,
+                title: "Visualizer Mode",
+                desc: "Preview your split artwork in realistic 3D room environments before exporting."
+              },
+               {
+                icon: <Download className="w-6 h-6" />,
+                title: "Production Ready",
+                desc: "Export high-fidelity PDFs with bleed lines and cut marks for professional printers."
+              },
+              {
+                icon: <Share2 className="w-6 h-6" />,
+                title: "Cloud Sync",
+                desc: "Save your projects and access your designs from any device, anywhere."
+              },
+            ].map((feature, idx) => (
+              <motion.div
+                key={idx}
+                className="group p-8 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-colors duration-300"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: idx * 0.1, duration: 0.5 }}
+              >
+                <div className="w-12 h-12 rounded-lg bg-indigo-500/20 flex items-center justify-center text-indigo-400 mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg shadow-indigo-500/10">
+                  {feature.icon}
+                </div>
+                <h3 className="text-xl font-semibold mb-3 text-slate-100">{feature.title}</h3>
+                <p className="text-slate-400 leading-relaxed font-light">{feature.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+       {/* Showcase / Gallery */}
+       <section className="py-32 px-6 bg-slate-950">
+           <div className="max-w-7xl mx-auto">
+               <motion.div
+                   className="flex justify-between items-end mb-12"
+                   initial={{ opacity: 0, y: 20 }}
+                   whileInView={{ opacity: 1, y: 0 }}
+                   viewport={{ once: true }}
+               >
+                   <div>
+                       <h2 className="text-3xl md:text-5xl font-bold mb-4">Community Curations</h2>
+                       <p className="text-slate-400">Inspiring layouts created by our users.</p>
+                   </div>
+                   <button className="hidden md:flex items-center gap-2 text-indigo-400 hover:text-indigo-300 transition-colors">
+                       View All Gallery <ArrowRight className="w-4 h-4" />
+                   </button>
+               </motion.div>
+
+               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 h-[600px]">
+                   {[
+                       "bg-gradient-to-b from-slate-700 to-slate-800",
+                       "bg-gradient-to-tr from-indigo-900 to-slate-800",
+                       "bg-gradient-to-br from-purple-900 to-slate-900",
+                       "bg-gradient-to-tl from-slate-800 to-slate-700",
+                   ].map((bg, i) => (
+                       <motion.div
+                           key={i}
+                           className={`relative rounded-xl overflow-hidden ${bg} ${i === 0 || i === 3 ? 'md:col-span-2 md:row-span-2' : ''}`}
+                           whileHover={{ scale: 0.98 }}
+                           transition={{ duration: 0.4 }}
+                       >
+                           <div className="absolute inset-0 bg-black/20 hover:bg-black/0 transition-colors duration-500" />
+                           <div className="absolute bottom-6 left-6">
+                               <h4 className="text-white font-medium text-lg">Composition {i + 1}</h4>
+                               <p className="text-slate-400 text-sm">Fine Art Series</p>
+                           </div>
+                       </motion.div>
+                   ))}
+               </div>
+           </div>
+       </section>
 
       {/* Footer */}
-      <footer className="py-12 px-6 border-t border-white/10">
+      <footer className="py-16 px-6 border-t border-white/5 bg-slate-950">
         <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-6">
-            <div className="text-center md:text-left">
-              <h3 className="text-2xl font-bold text-white mb-2">Image Splitting Wallframe</h3>
-              <p className="text-gray-400">AI-powered wall art creation</p>
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-10">
+            <div>
+               <div className="flex items-center gap-2 mb-4">
+                  <Sparkles className="w-5 h-5 text-indigo-500" />
+                  <span className="text-xl font-bold tracking-tight">ImageSplit Studio</span>
+               </div>
+              <p className="text-slate-500 max-w-sm">
+                Redefining the boundaries of digital imagery and physical space.
+              </p>
             </div>
-            <div className="flex gap-6">
-              <motion.a
-                href="#"
-                className="text-gray-400 hover:text-white transition-colors"
-                whileHover={{ scale: 1.1 }}
-              >
-                <Github className="w-6 h-6" />
-              </motion.a>
-              <motion.a
-                href="#"
-                className="text-gray-400 hover:text-white transition-colors"
-                whileHover={{ scale: 1.1 }}
-              >
-                <Mail className="w-6 h-6" />
-              </motion.a>
+            
+            <div className="flex gap-8">
+                {["Product", "Company", "Legal"].map((col, i) => (
+                    <div key={i} className="flex flex-col gap-3">
+                        <h4 className="font-semibold text-slate-300 text-sm uppercase tracking-wider">{col}</h4>
+                        {["Features", "Pricing", "About"].map((link, j) => (
+                             <a key={j} href="#" className="text-slate-500 hover:text-indigo-400 transition-colors text-sm">{link}</a>
+                        ))}
+                    </div>
+                ))}
             </div>
           </div>
-          <div className="text-center mt-8 pt-8 border-t border-white/10">
-            <p className="text-gray-500">
-              © 2024 Image Splitting Wallframe. Built with Next.js & AI.
-            </p>
+          
+          <div className="mt-16 pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-slate-600">
+            <p>© 2024 ImageSplit Studio. All rights reserved.</p>
+            <div className="flex gap-6">
+               <Github className="w-5 h-5 hover:text-white transition-colors cursor-pointer" />
+               <Mail className="w-5 h-5 hover:text-white transition-colors cursor-pointer" />
+            </div>
           </div>
         </div>
       </footer>
