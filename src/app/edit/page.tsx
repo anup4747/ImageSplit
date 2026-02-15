@@ -245,44 +245,46 @@ export default function EditPage() {
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 text-slate-900">
+    <main className="min-h-screen bg-white text-slate-900 overflow-x-hidden font-sans selection:bg-indigo-100">
+      {/* Dynamic Background */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-indigo-100/50 blur-[120px]" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-pink-100/50 blur-[120px]" />
+      </div>
+
       {/* Header */}
-      <header className="border-b border-gray-200 bg-white/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+      <motion.header
+        className="relative z-10 p-6"
+        initial={{ opacity: 0, y: -12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+      >
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <motion.button
+            onClick={() => router.push('/upload')}
+            className="group flex items-center gap-3 cursor-pointer bg-slate-100 border border-slate-300 backdrop-blur-md hover:bg-slate-200 rounded-full px-4 py-2 transition-all duration-300"
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+            <span className="text-sm font-medium text-slate-700">Back</span>
+          </motion.button>
+
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center">
-              <svg
-                className="w-6 h-6 text-white"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"
-                />
-              </svg>
+            <div className="w-10 h-10 rounded-xl bg-indigo-100 flex items-center justify-center">
+              <Sparkles className="w-6 h-6 text-indigo-600" />
             </div>
             <div>
-              <h1 className="text-xl font-bold">Edit Wallframe</h1>
-              <p className="text-xs text-gray-400">Arrange and customize your wall art</p>
+              <h1 className="text-lg font-bold text-slate-900">Edit Wallframe</h1>
+              <p className="text-xs text-slate-500">Arrange and customize your wall art</p>
             </div>
           </div>
 
           <div className="flex items-center gap-3">
-            <button
-              onClick={() => router.push('/upload')}
-              className="px-4 py-2 text-sm bg-gray-200 cursor-pointer hover:bg-gray-300 rounded-lg transition-colors flex items-center gap-2"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Back to Upload
-            </button>
             {pages.length > 0 && (
               <button
                 onClick={handleReset}
-                className="px-4 py-2 text-sm bg-gray-200 hover:bg-gray-300 rounded-lg transition-colors flex items-center gap-2"
+                className="px-4 py-2 text-sm bg-slate-100 hover:bg-slate-200 rounded-full transition-colors flex items-center gap-2 border border-slate-200"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
@@ -297,103 +299,182 @@ export default function EditPage() {
             )}
           </div>
         </div>
-      </header>
+      </motion.header>
 
-      {pages.length === 0 ? (
-        /* Loading/Splitting View */
-        <div className="max-w-2xl mx-auto px-6 py-16">
-          <div className="text-center mb-12">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.5 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.8 }}
-            >
-              <div className="w-24 h-24 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Sparkles className="w-12 h-12 text-blue-400" />
-              </div>
-            </motion.div>
-            <h2 className="text-4xl font-bold mb-4 bg-gradient-to-r from-violet-400 to-fuchsia-400 bg-clip-text text-transparent">
-              Preparing Your Wallframe
-            </h2>
-            <p className="text-gray-600 text-lg">Splitting your image into printable pages...</p>
-          </div>
+      <motion.main className="relative z-10" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+        {pages.length === 0 ? (
+          /* Loading/Splitting View */
+          <div className="max-w-4xl mx-auto py-16">
+            <div className="text-center mb-12">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.6 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.7 }}
+              >
+                <div className="w-28 h-28 bg-indigo-50 rounded-full flex items-center justify-center mx-auto mb-6 shadow-md">
+                  <Sparkles className="w-12 h-12 text-indigo-600" />
+                </div>
+              </motion.div>
 
-          <div className="space-y-8">
-            {previewUrl && (
-              <div className="p-4 bg-white rounded-xl border border-gray-300 shadow-sm">
-                <p className="text-sm text-gray-600 mb-3">Original Image</p>
-                <img src={previewUrl} alt="Preview" className="max-h-48 mx-auto rounded-lg" />
-              </div>
-            )}
+              <h2 className="text-5xl font-bold mb-4 tracking-tight leading-[1.05]">
+                <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+                  Preparing Your Wallframe
+                </span>
+              </h2>
+              <p className="text-lg text-slate-600">Splitting your image into printable pages...</p>
+            </div>
 
-            {isProcessing && (
-              <div className="flex items-center justify-center gap-3 py-8">
-                <svg
-                  className="w-6 h-6 animate-spin text-violet-500"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  />
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  />
-                </svg>
-                <span className="text-gray-700">Splitting image...</span>
-              </div>
-            )}
-          </div>
-        </div>
-      ) : (
-        /* Editor View */
-        <div className="h-[calc(100vh-73px)] flex">
-          {/* Main Editor Area */}
-          <div className="flex-1 flex flex-col">
-            <CollageEditor pages={pages} pageSize={selectedPageSize} onPagesChange={setPages} />
-          </div>
-
-          {/* Sidebar */}
-          <div className="w-80 border-l border-gray-200 bg-white/50 backdrop-blur-sm p-4 overflow-y-auto">
-            <div className="space-y-6">
-              {/* Original Image Preview */}
+            <div className="grid md:grid-cols-2 gap-8">
               {previewUrl && (
-                <div className="p-4 bg-white rounded-xl border border-gray-300 shadow-sm">
-                  <p className="text-sm text-gray-600 mb-3">Original Image</p>
-                  <img src={previewUrl} alt="Original" className="w-full rounded-lg" />
+                <div className="p-6 bg-slate-50 rounded-2xl border border-slate-200 shadow-sm">
+                  <p className="text-sm text-slate-600 mb-3">Original Image</p>
+                  <img
+                    src={previewUrl}
+                    alt="Preview"
+                    className="max-h-64 mx-auto rounded-lg object-contain"
+                  />
                 </div>
               )}
 
-              {/* Page Size Selector */}
-              <PageSizeSelector selectedSize={selectedSizeKey} onSizeChange={handleSizeChange} />
-
-              {/* Wall Settings */}
-              <WallSettings
-                wallDimensions={wallDimensions}
-                onDimensionsChange={handleWallDimensionsChange}
-                isApplying={isApplyingWallDimensions}
-              />
-
-              {/* Export Panel */}
-              <ExportPanel
-                pages={pages}
-                pageSize={selectedPageSize}
-                rows={rows}
-                cols={cols}
-                wallDimensions={wallDimensions}
-                scaleFactor={scaleFactor}
-              />
+              <div className="flex items-center justify-center p-6 bg-white rounded-2xl border border-slate-200 shadow-sm">
+                {isProcessing ? (
+                  <div className="flex flex-col items-center gap-4">
+                    <div className="w-16 h-16 rounded-full flex items-center justify-center bg-gradient-to-br from-indigo-600 to-pink-600 text-white shadow-lg animate-pulse">
+                      <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none">
+                        <path
+                          d="M12 2v6"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                        <path
+                          d="M12 22v-6"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                        <path
+                          d="M4.93 4.93l4.24 4.24"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                        <path
+                          d="M19.07 19.07l-4.24-4.24"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-sm text-slate-700 font-medium">Splitting image...</p>
+                      <p className="text-xs text-slate-500">
+                        This may take a few moments for large images
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center text-slate-600">Waiting to start splitting...</div>
+                )}
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        ) : (
+          /* Editor View */
+          <div className="h-[calc(100vh-120px)] flex  w-full overflow-hidden">
+            {/* Main Editor Area (canvas) */}
+            <div className="flex-1 flex flex-col bg-gradient-to-b from-white to-indigo-50 p-6 rounded-2xl overflow-hidden">
+              <div className="p-2 mb-4">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-2">
+                    <button className="px-3 py-2 rounded-full bg-white text-indigo-700 border border-indigo-100 shadow-sm hover:shadow-md">
+                      Preview
+                    </button>
+                    <button className="px-3 py-2 rounded-full bg-white text-indigo-700 border border-indigo-100 shadow-sm hover:shadow-md">
+                      Grid
+                    </button>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => router.push('/upload')}
+                      className="px-3 py-2 rounded-full bg-white text-indigo-700 border border-indigo-100 shadow-sm hover:shadow-md"
+                    >
+                      Change Image
+                    </button>
+                    {pages.length > 0 && (
+                      <button
+                        onClick={handleReset}
+                        className="px-3 py-2 rounded-full bg-indigo-600 text-white hover:bg-indigo-700 shadow"
+                      >
+                        New Image
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex-1">
+                <div className="h-full bg-white rounded-2xl  shadow-xl overflow-auto p-6">
+                  <CollageEditor
+                    pages={pages}
+                    pageSize={selectedPageSize}
+                    onPagesChange={setPages}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Sidebar (right) */}
+            <aside className="w-80 p-6 bg-white/80 backdrop-blur-sm rounded-2xl border border-indigo-100 shadow-xl overflow-auto">
+              <div className="space-y-6">
+                {previewUrl && (
+                  <div className="p-4 bg-white rounded-xl border border-slate-200 shadow-sm">
+                    <p className="text-sm text-slate-600 mb-3">Original Image</p>
+                    <img
+                      src={previewUrl}
+                      alt="Original"
+                      className="w-full rounded-lg object-contain"
+                    />
+                  </div>
+                )}
+
+                <div className="bg-white rounded-lg p-4 border border-slate-200">
+                  <PageSizeSelector
+                    selectedSize={selectedSizeKey}
+                    onSizeChange={handleSizeChange}
+                  />
+                </div>
+
+                <div className="bg-white rounded-lg p-4 border border-slate-200">
+                  <WallSettings
+                    wallDimensions={wallDimensions}
+                    onDimensionsChange={handleWallDimensionsChange}
+                    isApplying={isApplyingWallDimensions}
+                  />
+                </div>
+
+                <div className="bg-white rounded-lg p-4 border border-slate-200">
+                  <ExportPanel
+                    pages={pages}
+                    pageSize={selectedPageSize}
+                    rows={rows}
+                    cols={cols}
+                    wallDimensions={wallDimensions}
+                    scaleFactor={scaleFactor}
+                  />
+                </div>
+              </div>
+            </aside>
+
+            {/* removed duplicate canvas - single canvas on the left is used */}
+          </div>
+        )}
+      </motion.main>
     </main>
   );
 }

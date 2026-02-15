@@ -336,7 +336,7 @@ export default function CollageEditor({ pages, pageSize, onPagesChange }: Collag
         onWheel={handleWheel}
         onMouseDown={handleCanvasMouseDown}
         onDoubleClick={handleDoubleClick}
-        className="flex-1 overflow-hidden relative bg-gray-900/50 canvas-bg"
+        className="flex-1 overflow-hidden relative bg-white canvas-bg"
         style={{ cursor: isPanning ? 'grabbing' : spacePressed ? 'grab' : 'default', touchAction: 'none' }}
       >
         {/* Grid pattern background */}
@@ -344,8 +344,8 @@ export default function CollageEditor({ pages, pageSize, onPagesChange }: Collag
           className="absolute inset-0 canvas-bg"
           style={{
             backgroundImage: `
-              linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px),
-              linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px)
+                  linear-gradient(to right, rgba(0,0,0,0.22) 1px, transparent 1px),
+                  linear-gradient(to bottom, rgba(0,0,0,0.22) 1px, transparent 1px)
             `,
             backgroundSize: `${50 * scale}px ${50 * scale}px`,
             backgroundPosition: `${panOffset.x}px ${panOffset.y}px`,
@@ -376,7 +376,7 @@ export default function CollageEditor({ pages, pageSize, onPagesChange }: Collag
         </div>
 
         {/* Info overlay */}
-        <div className="absolute bottom-4 left-4 text-xs text-gray-500 bg-gray-800/80 px-3 py-2 rounded-lg space-y-1">
+        <div className="absolute bottom-4 left-4 text-xs text-slate-700 bg-white/90 px-3 py-2 rounded-lg space-y-1 shadow">
           <p>Drag pages to move • Pinch/Ctrl+Scroll to zoom • Alt/Space+drag to pan</p>
           <p>
             {pages.length} pages • {pageSize.name} format • Grid: {cols}×{rows}
