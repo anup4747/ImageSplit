@@ -7,6 +7,7 @@ interface PageCardProps {
   page: SplitPage;
   isSelected: boolean;
   scale: number;
+  panOffset?: { x: number; y: number };
   onSelect: () => void;
   onPositionChange: (x: number, y: number) => void;
   onRotationChange: (rotation: number) => void;
@@ -18,6 +19,7 @@ export default function PageCard({
   page,
   isSelected,
   scale,
+  panOffset = { x: 0, y: 0 },
   onSelect,
   onPositionChange,
   onRotationChange,
@@ -68,16 +70,16 @@ export default function PageCard({
     onBringToFront();
     setIsDragging(true);
     setDragStart({
-      x: e.clientX - page.x * scale,
-      y: e.clientY - page.y * scale,
+      x: e.clientX - (page.x * scale + panOffset.x),
+      y: e.clientY - (page.y * scale + panOffset.y),
     });
   };
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       if (!isDragging) return;
-      const newX = (e.clientX - dragStart.x) / scale;
-      const newY = (e.clientY - dragStart.y) / scale;
+      const newX = (e.clientX - dragStart.x - panOffset.x) / scale;
+      const newY = (e.clientY - dragStart.y - panOffset.y) / scale;
       onPositionChange(newX, newY);
     };
 

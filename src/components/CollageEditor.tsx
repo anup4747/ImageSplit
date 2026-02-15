@@ -18,6 +18,7 @@ export default function CollageEditor({ pages, pageSize, onPagesChange }: Collag
   const [isPanning, setIsPanning] = useState(false);
   const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
   const [panStart, setPanStart] = useState({ x: 0, y: 0 });
+  const [spacePressed, setSpacePressed] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Undo / Redo history
@@ -112,10 +113,44 @@ export default function CollageEditor({ pages, pageSize, onPagesChange }: Collag
   const joinedDimensions =
     pages.length > 0 ? calculateTotalJoinedDimensions(pages, pageSize, rows, cols) : null;
 
+  const clamp = (v: number, a: number, b: number) => Math.min(Math.max(v, a), b);
+
   const handleWheel = (e: React.WheelEvent) => {
+    // Zoom when Ctrl/Cmd (or pinch on many devices) is used. Otherwise pan.
+    const isZoomGesture = e.ctrlKey || e.metaKey;
+    if (isZoomGesture) {
+      e.preventDefault();
+      const deltaFactor = e.deltaY > 0 ? 0.9 : 1.1;
+
+      const rect = containerRef.current?.getBoundingClientRect();
+      const cx = rect ? e.clientX - rect.left : 0;
+      const cy = rect ? e.clientY - rect.top : 0;
+
+      setScale((prevScale) => {
+        const newScale = clamp(prevScale * deltaFactor, 0.25, 2);
+
+        // pan' = pan + (cursor - pan) * (1 - newScale/prevScale)
+        setPanOffset((prevPan) => ({
+          x: prevPan.x + (cx - prevPan.x) * (1 - newScale / prevScale),
+          y: prevPan.y + (cy - prevPan.y) * (1 - newScale / prevScale),
+        }));
+
+        return newScale;
+      });
+
+      return;
+    }
+
+    // Horizontal scroll when Shift is held
+    if (e.shiftKey) {
+      e.preventDefault();
+      setPanOffset((p) => ({ x: p.x - e.deltaY, y: p.y }));
+      return;
+    }
+
+    // Default: vertical pan (scroll wheel)
     e.preventDefault();
-    const delta = e.deltaY > 0 ? 0.9 : 1.1;
-    setScale((prev) => Math.min(Math.max(prev * delta, 0.25), 2));
+    setPanOffset((p) => ({ x: p.x, y: p.y - e.deltaY }));
   };
 
   const handleCanvasMouseDown = (e: React.MouseEvent) => {
@@ -124,11 +159,31 @@ export default function CollageEditor({ pages, pageSize, onPagesChange }: Collag
       (e.target as HTMLElement).classList.contains('canvas-bg')
     ) {
       setSelectedPageId(null);
-      if (e.button === 1 || (e.button === 0 && e.altKey)) {
+      if (e.button === 1 || (e.button === 0 && (e.altKey || spacePressed))) {
         setIsPanning(true);
         setPanStart({ x: e.clientX - panOffset.x, y: e.clientY - panOffset.y });
       }
     }
+  };
+
+  const handleDoubleClick = (e: React.MouseEvent) => {
+    const rect = containerRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const cx = e.clientX - rect.left;
+    const cy = e.clientY - rect.top;
+
+    setScale((prevScale) => {
+      const target = prevScale < 1.25 ? 1.5 : 1;
+      setPanOffset((prevPan) => {
+        const contentX = (cx - prevPan.x) / prevScale;
+        const contentY = (cy - prevPan.y) / prevScale;
+        return {
+          x: cx - contentX * target,
+          y: cy - contentY * target,
+        };
+      });
+      return target;
+    });
   };
 
   useEffect(() => {
@@ -155,6 +210,31 @@ export default function CollageEditor({ pages, pageSize, onPagesChange }: Collag
       window.removeEventListener('mouseup', handleMouseUp);
     };
   }, [isPanning, panStart]);
+
+  // Spacebar to enable pan (hold)
+  useEffect(() => {
+    const kd = (e: KeyboardEvent) => {
+      if (e.code === 'Space') {
+        e.preventDefault();
+        setSpacePressed(true);
+      }
+    };
+    const ku = (e: KeyboardEvent) => {
+      if (e.code === 'Space') {
+        setSpacePressed(false);
+      }
+    };
+    const onBlur = () => setSpacePressed(false);
+
+    window.addEventListener('keydown', kd);
+    window.addEventListener('keyup', ku);
+    window.addEventListener('blur', onBlur);
+    return () => {
+      window.removeEventListener('keydown', kd);
+      window.removeEventListener('keyup', ku);
+      window.removeEventListener('blur', onBlur);
+    };
+  }, []);
 
   return (
     <div className="flex flex-col h-full">
@@ -255,8 +335,9 @@ export default function CollageEditor({ pages, pageSize, onPagesChange }: Collag
         aria-label="Image pages editor canvas. Drag pages to reposition, use arrow keys to move selected page, scroll to zoom, Alt+drag to pan"
         onWheel={handleWheel}
         onMouseDown={handleCanvasMouseDown}
+        onDoubleClick={handleDoubleClick}
         className="flex-1 overflow-hidden relative bg-gray-900/50 canvas-bg"
-        style={{ cursor: isPanning ? 'grabbing' : 'default', touchAction: 'none' }}
+        style={{ cursor: isPanning ? 'grabbing' : spacePressed ? 'grab' : 'default', touchAction: 'none' }}
       >
         {/* Grid pattern background */}
         <div
@@ -284,6 +365,7 @@ export default function CollageEditor({ pages, pageSize, onPagesChange }: Collag
               page={page}
               isSelected={selectedPageId === page.id}
               scale={scale}
+              panOffset={panOffset}
               onSelect={() => setSelectedPageId(page.id)}
               onPositionChange={(x, y) => handlePositionChange(page.id, x, y)}
               onRotationChange={(rotation) => handleRotationChange(page.id, rotation)}
@@ -295,7 +377,7 @@ export default function CollageEditor({ pages, pageSize, onPagesChange }: Collag
 
         {/* Info overlay */}
         <div className="absolute bottom-4 left-4 text-xs text-gray-500 bg-gray-800/80 px-3 py-2 rounded-lg space-y-1">
-          <p>Drag pages to move • Scroll to zoom • Alt+drag to pan</p>
+          <p>Drag pages to move • Pinch/Ctrl+Scroll to zoom • Alt/Space+drag to pan</p>
           <p>
             {pages.length} pages • {pageSize.name} format • Grid: {cols}×{rows}
           </p>
