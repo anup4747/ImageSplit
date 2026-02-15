@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
+import { motion, useScroll, useTransform, AnimatePresence, scale, scalePoint } from 'framer-motion';
 import {
   ArrowRight,
   Sparkles,
@@ -56,14 +56,14 @@ export default function Portfolio() {
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center justify-center px-6 pt-20">
         <motion.div style={{ y, opacity }} className="absolute inset-0 -z-10">
-           <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-[0.03] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))]" />
+          <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-[0.03] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))]" />
         </motion.div>
 
         <div className="relative z-10 max-w-7xl mx-auto text-center">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 1, ease: "easeOut" }}
+            transition={{ duration: 1, ease: 'easeOut' }}
             className="mb-10 inline-block"
           >
             <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-md shadow-lg shadow-indigo-500/10">
@@ -95,8 +95,8 @@ export default function Portfolio() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
           >
-            Transform sophisticated imagery into gallery-grade multi-panel masterpieces.
-            Intelligent splitting, seamless layouts, and print-ready exports defined by precision.
+            Transform sophisticated imagery into gallery-grade multi-panel masterpieces. Intelligent
+            splitting, seamless layouts, and print-ready exports defined by precision.
           </motion.p>
 
           <motion.div
@@ -104,10 +104,10 @@ export default function Portfolio() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.6 }}
-            >
+          >
             <Link href="/upload">
               <motion.button
-                className="group relative px-8 py-4 bg-white text-slate-900 rounded-full font-semibold text-lg overflow-hidden shadow-[0_0_40px_-10px_rgba(255,255,255,0.3)] hover:shadow-[0_0_60px_-15px_rgba(255,255,255,0.5)] transition-all duration-300"
+                className="group relative px-8 py-4 bg-white text-slate-900 rounded-full font-semibold text-lg cursor-pointer overflow-hidden shadow-[0_0_40px_-10px_rgba(255,255,255,0.3)] hover:shadow-[0_0_60px_-15px_rgba(255,255,255,0.5)] transition-all duration-300"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
@@ -128,7 +128,7 @@ export default function Portfolio() {
         >
           <motion.div
             animate={{ y: [0, 8, 0] }}
-            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+            transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
           >
             <ChevronDown className="w-6 h-6 text-slate-600" />
           </motion.div>
@@ -156,9 +156,9 @@ export default function Portfolio() {
               </p>
               <ul className="space-y-4">
                 {[
-                  "Gallery-quality resolution retention",
-                  "AI-assisted composition analysis",
-                  "Calibrated for professional printing"
+                  'Gallery-quality resolution retention',
+                  'AI-assisted composition analysis',
+                  'Calibrated for professional printing',
                 ].map((item, i) => (
                   <li key={i} className="flex items-center gap-3 text-slate-300">
                     <div className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
@@ -169,21 +169,21 @@ export default function Portfolio() {
             </motion.div>
 
             <motion.div
-              className="relative"
+              className="relative cursor-pointer"
               initial={{ opacity: 0, x: 50 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.8 }}
             >
               <div className="aspect-[4/3] rounded-2xl overflow-hidden bg-gradient-to-br from-indigo-500/10 to-purple-500/10 border border-white/5 backdrop-blur-sm p-8 relative">
-                 <div className="absolute inset-0 bg-grid-white/[0.02]" />
-                 <div className="grid grid-cols-2 gap-4 h-full">
-                    <div className="bg-slate-800/50 rounded-lg animate-pulse" />
-                    <div className="grid grid-rows-2 gap-4">
-                        <div className="bg-slate-800/30 rounded-lg" />
-                        <div className="bg-slate-800/30 rounded-lg" />
-                    </div>
-                 </div>
+                <div className="absolute inset-0 bg-grid-white/[0.02]" />
+                <div className="grid grid-cols-2 gap-4 h-full">
+                  <div className="bg-slate-800/50 rounded-lg animate-pulse" />
+                  <div className="grid grid-rows-2 gap-4">
+                    <div className="bg-slate-800/30 rounded-lg" />
+                    <div className="bg-slate-800/30 rounded-lg" />
+                  </div>
+                </div>
               </div>
             </motion.div>
           </div>
@@ -211,38 +211,38 @@ export default function Portfolio() {
             {[
               {
                 icon: <Layers className="w-6 h-6" />,
-                title: "Smart Segmentation",
-                desc: "Intelligent algorithms that respect focal points and image composition while splitting."
+                title: 'Smart Segmentation',
+                desc: 'Intelligent algorithms that respect focal points and image composition while splitting.',
               },
               {
                 icon: <Sparkles className="w-6 h-6" />,
-                title: "AI Layout Engine",
-                desc: "Generative layout suggestions based on the unique geometry of your image."
+                title: 'AI Layout Engine',
+                desc: 'Generative layout suggestions based on the unique geometry of your image.',
               },
               {
                 icon: <Crop className="w-6 h-6" />,
-                title: "Precision Cropping",
-                desc: "Lossless cropping and resizing to ensure every panel is print-perfect."
+                title: 'Precision Cropping',
+                desc: 'Lossless cropping and resizing to ensure every panel is print-perfect.',
               },
               {
                 icon: <Palette className="w-6 h-6" />,
-                title: "Visualizer Mode",
-                desc: "Preview your split artwork in realistic 3D room environments before exporting."
+                title: 'Visualizer Mode',
+                desc: 'Preview your split artwork in realistic 3D room environments before exporting.',
               },
-               {
+              {
                 icon: <Download className="w-6 h-6" />,
-                title: "Production Ready",
-                desc: "Export high-fidelity PDFs with bleed lines and cut marks for professional printers."
+                title: 'Production Ready',
+                desc: 'Export high-fidelity PDFs with bleed lines and cut marks for professional printers.',
               },
               {
                 icon: <Share2 className="w-6 h-6" />,
-                title: "Cloud Sync",
-                desc: "Save your projects and access your designs from any device, anywhere."
+                title: 'Cloud Sync',
+                desc: 'Save your projects and access your designs from any device, anywhere.',
               },
             ].map((feature, idx) => (
               <motion.div
                 key={idx}
-                className="group p-8 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-colors duration-300"
+                className="group p-8 rounded-2xl cursor-pointer bg-white/5 border border-white/5 hover:bg-white/10 transition-colors duration-300"
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -259,79 +259,87 @@ export default function Portfolio() {
         </div>
       </section>
 
-       {/* Showcase / Gallery */}
-       <section className="py-32 px-6 bg-slate-950">
-           <div className="max-w-7xl mx-auto">
-               <motion.div
-                   className="flex justify-between items-end mb-12"
-                   initial={{ opacity: 0, y: 20 }}
-                   whileInView={{ opacity: 1, y: 0 }}
-                   viewport={{ once: true }}
-               >
-                   <div>
-                       <h2 className="text-3xl md:text-5xl font-bold mb-4">Community Curations</h2>
-                       <p className="text-slate-400">Inspiring layouts created by our users.</p>
-                   </div>
-                   <button className="hidden md:flex items-center gap-2 text-indigo-400 hover:text-indigo-300 transition-colors">
-                       View All Gallery <ArrowRight className="w-4 h-4" />
-                   </button>
-               </motion.div>
+      {/* Showcase / Gallery */}
+      <section className="py-32 px-6 bg-slate-950">
+        <div className="max-w-7xl mx-auto">
+          <motion.div
+            className="flex justify-between items-end mb-12"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
+            <div>
+              <h2 className="text-3xl md:text-5xl font-bold mb-4">Community Curations</h2>
+              <p className="text-slate-400">Inspiring layouts created by our users.</p>
+            </div>
+            <button className="hidden md:flex items-center gap-2 text-indigo-400 hover:text-indigo-300 transition-colors">
+              View All Gallery <ArrowRight className="w-4 h-4" />
+            </button>
+          </motion.div>
 
-               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 h-[600px]">
-                   {[
-                       "bg-gradient-to-b from-slate-700 to-slate-800",
-                       "bg-gradient-to-tr from-indigo-900 to-slate-800",
-                       "bg-gradient-to-br from-purple-900 to-slate-900",
-                       "bg-gradient-to-tl from-slate-800 to-slate-700",
-                   ].map((bg, i) => (
-                       <motion.div
-                           key={i}
-                           className={`relative rounded-xl overflow-hidden ${bg} ${i === 0 || i === 3 ? 'md:col-span-2 md:row-span-2' : ''}`}
-                           whileHover={{ scale: 0.98 }}
-                           transition={{ duration: 0.4 }}
-                       >
-                           <div className="absolute inset-0 bg-black/20 hover:bg-black/0 transition-colors duration-500" />
-                           <div className="absolute bottom-6 left-6">
-                               <h4 className="text-white font-medium text-lg">Composition {i + 1}</h4>
-                               <p className="text-slate-400 text-sm">Fine Art Series</p>
-                           </div>
-                       </motion.div>
-                   ))}
-               </div>
-           </div>
-       </section>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 h-[600px]">
+            {[
+              'bg-gradient-to-b from-slate-700 to-slate-800',
+              'bg-gradient-to-tr from-indigo-900 to-slate-800',
+              'bg-gradient-to-br from-purple-900 to-slate-900',
+              'bg-gradient-to-tl from-slate-800 to-slate-700',
+            ].map((bg, i) => (
+              <motion.div
+                key={i}
+                className={`relative cursor-pointer rounded-xl overflow-hidden ${bg} ${i === 0 || i === 3 ? 'md:col-span-2 md:row-span-2' : ''}`}
+                whileHover={{ scale: 0.98 }}
+                transition={{ duration: 0.4 }}
+              >
+                <div className="absolute inset-0 bg-black/20 hover:bg-black/0 transition-colors duration-500" />
+                <div className="absolute bottom-6 left-6">
+                  <h4 className="text-white font-medium text-lg">Composition {i + 1}</h4>
+                  <p className="text-slate-400 text-sm">Fine Art Series</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* Footer */}
       <footer className="py-16 px-6 border-t border-white/5 bg-slate-950">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-10">
             <div>
-               <div className="flex items-center gap-2 mb-4">
-                  <Sparkles className="w-5 h-5 text-indigo-500" />
-                  <span className="text-xl font-bold tracking-tight">ImageSplit Studio</span>
-               </div>
+              <div className="flex items-center gap-2 mb-4">
+                <Sparkles className="w-5 h-5 text-indigo-500" />
+                <span className="text-xl font-bold tracking-tight">ImageSplit Studio</span>
+              </div>
               <p className="text-slate-500 max-w-sm">
                 Redefining the boundaries of digital imagery and physical space.
               </p>
             </div>
-            
+
             <div className="flex gap-8">
-                {["Product", "Company", "Legal"].map((col, i) => (
-                    <div key={i} className="flex flex-col gap-3">
-                        <h4 className="font-semibold text-slate-300 text-sm uppercase tracking-wider">{col}</h4>
-                        {["Features", "Pricing", "About"].map((link, j) => (
-                             <a key={j} href="#" className="text-slate-500 hover:text-indigo-400 transition-colors text-sm">{link}</a>
-                        ))}
-                    </div>
-                ))}
+              {['Product', 'Company', 'Legal'].map((col, i) => (
+                <div key={i} className="flex flex-col gap-3">
+                  <h4 className="font-semibold text-slate-300 text-sm uppercase tracking-wider">
+                    {col}
+                  </h4>
+                  {['Features', 'Pricing', 'About'].map((link, j) => (
+                    <a
+                      key={j}
+                      href="#"
+                      className="text-slate-500 hover:text-indigo-400 transition-colors text-sm"
+                    >
+                      {link}
+                    </a>
+                  ))}
+                </div>
+              ))}
             </div>
           </div>
-          
+
           <div className="mt-16 pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-slate-600">
             <p>© 2024 ImageSplit Studio. All rights reserved.</p>
             <div className="flex gap-6">
-               <Github className="w-5 h-5 hover:text-white transition-colors cursor-pointer" />
-               <Mail className="w-5 h-5 hover:text-white transition-colors cursor-pointer" />
+              <Github className="w-5 h-5 hover:text-white transition-colors cursor-pointer" />
+              <Mail className="w-5 h-5 hover:text-white transition-colors cursor-pointer" />
             </div>
           </div>
         </div>
