@@ -3,20 +3,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import {
-  ArrowLeft,
-  Sparkles,
-  Image as ImageIcon,
-  Download,
-  Zap,
-  Palette,
-  Code,
-  Github,
-  Mail,
-  Play,
-  Star,
-  ChevronDown,
-} from 'lucide-react';
+import { ArrowLeft, Sparkles } from 'lucide-react';
 import ImageUploader from '@/components/ImageUploader';
 import PageSizeSelector from '@/components/PageSizeSelector';
 import CollageEditor from '@/components/CollageEditor';
@@ -63,10 +50,7 @@ export default function EditPage() {
         // optionally set selectedFile if needed later
       } catch (error) {
         console.error('Failed to load stored image:', error);
-        router.push('/upload');
       }
-    } else {
-      router.push('/upload');
     }
   }, []);
 
@@ -164,24 +148,6 @@ export default function EditPage() {
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            {pages.length > 0 && (
-              <button
-                onClick={handleReset}
-                className="px-4 py-2 text-sm bg-slate-100 hover:bg-slate-200 rounded-full transition-colors flex items-center gap-2 border border-slate-200"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 4v16m8-8H4"
-                  />
-                </svg>
-                New Image
-              </button>
-            )}
-          </div>
         </div>
       </motion.header>
 
@@ -189,38 +155,10 @@ export default function EditPage() {
         {/* Editor View (UI focus) */}
         <div className="h-[calc(100vh-120px)] flex  w-full overflow-hidden">
           {/* Main Editor Area (canvas) */}
-          <div className="flex-1 flex flex-col bg-gradient-to-b from-white to-indigo-50 p-6 rounded-2xl overflow-hidden">
-            <div className="p-2 mb-4">
-              <div className="flex items-center justify-between gap-4">
-                <div className="flex items-center gap-2">
-                  <button className="px-3 py-2 rounded-full bg-white text-indigo-700 border border-indigo-100 shadow-sm hover:shadow-md">
-                    Preview
-                  </button>
-                  <button className="px-3 py-2 rounded-full bg-white text-indigo-700 border border-indigo-100 shadow-sm hover:shadow-md">
-                    Grid
-                  </button>
-                </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => router.push('/upload')}
-                    className="px-3 py-2 rounded-full bg-white text-indigo-700 border border-indigo-100 shadow-sm hover:shadow-md"
-                  >
-                    Change Image
-                  </button>
-                  {pages.length > 0 && (
-                    <button
-                      onClick={handleReset}
-                      className="px-3 py-2 rounded-full bg-indigo-600 text-white hover:bg-indigo-700 shadow"
-                    >
-                      New Image
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
-
+          <div className="flex-1 flex flex-col bg-gradient-to-b from-white to-indigo-50 rounded-2xl overflow-hidden">
+  
             <div className="flex-1">
-              <div className="h-full bg-white rounded-2xl  shadow-xl overflow-auto p-6">
+              <div className="h-full bg-white rounded-2xl shadow-xl overflow-auto">
                 <CollageEditor pages={pages} pageSize={selectedPageSize} onPagesChange={setPages} />
               </div>
             </div>

@@ -24,7 +24,6 @@ export default function CollageEditor({ pages, pageSize, onPagesChange }: Collag
   // Undo / Redo history
   const [history, setHistory] = useState<SplitPage[][]>([pages]);
   const [historyIndex, setHistoryIndex] = useState(0);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Reset history when parent supplies a brand-new pages set (e.g., split result)
   useEffect(() => {
@@ -252,17 +251,6 @@ export default function CollageEditor({ pages, pageSize, onPagesChange }: Collag
     };
   }, [selectedPageId, pages, onPagesChange]);
 
-  const handleAddClick = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file && file.type.startsWith('image/')) {
-      addPage(file);
-    }
-    e.target.value = '';
-  };
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -278,91 +266,6 @@ export default function CollageEditor({ pages, pageSize, onPagesChange }: Collag
 
   return (
     <div className="flex flex-col h-full">
-      {/* Toolbar */}
-      <div className="flex items-center justify-between px-4 py-3 bg-gray-800/50 border-b border-gray-700">
-        <div className="flex items-center gap-2">
-          <button
-            onClick={handleUndo}
-            disabled={!canUndo}
-            aria-label="Undo last change (Ctrl+Z)"
-            aria-disabled={!canUndo}
-            className={`px-3 py-1.5 text-sm rounded-lg transition-colors flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-blue-400 ${canUndo ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-800 text-gray-500 cursor-not-allowed'}`}
-          >
-            Undo
-          </button>
-          <button
-            onClick={handleRedo}
-            disabled={!canRedo}
-            aria-label="Redo last change (Ctrl+Shift+Z)"
-            aria-disabled={!canRedo}
-            className={`px-3 py-1.5 text-sm rounded-lg transition-colors flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-blue-400 ${canRedo ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-800 text-gray-500 cursor-not-allowed'}`}
-          >
-            Redo
-          </button>
-          <button
-            onClick={handleAddClick}
-            aria-label="Add image"
-            className="px-3 py-1.5 text-sm bg-indigo-600 hover:bg-indigo-500 rounded-lg transition-colors flex items-center gap-1 focus:outline-none focus:ring-2 focus:ring-blue-400"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 4v16m8-8H4"
-              />
-            </svg>
-            Add Image
-          </button>
-          <button
-            onClick={handleDeleteSelected}
-            disabled={!selectedPageId}
-            aria-label="Delete selected image"
-            className={`px-3 py-1.5 text-sm rounded-lg transition-colors flex items-center gap-1 focus:outline-none focus:ring-2 focus:ring-blue-400 ${
-              selectedPageId
-                ? 'bg-red-600 hover:bg-red-500 text-white'
-                : 'bg-gray-800 text-gray-500 cursor-not-allowed'
-            }`}
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-            Delete
-          </button>
-          <input
-            type="file"
-            accept="image/*"
-            className="hidden"
-            ref={fileInputRef}
-            onChange={handleFileInput}
-          />
-        </div>
-
-        <div className="flex items-center gap-3">
-          <span className="text-sm text-gray-400">Zoom: {Math.round(scale * 100)}%</span>
-          <input
-            type="range"
-            min="25"
-            max="200"
-            value={scale * 100}
-            onChange={(e) => setScale(parseInt(e.target.value) / 100)}
-            aria-label="Zoom level slider"
-            className="w-24 accent-violet-500 focus:outline-none focus:ring-2 focus:ring-blue-400"
-          />
-          <button
-            onClick={() => setScale(1)}
-            aria-label="Reset zoom to 100%"
-            className="px-2 py-1 text-xs bg-gray-700 hover:bg-gray-600 rounded transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400"
-          >
-            Reset
-          </button>
-        </div>
-      </div>
 
       {/* Canvas */}
       <div
@@ -374,24 +277,12 @@ export default function CollageEditor({ pages, pageSize, onPagesChange }: Collag
         onDoubleClick={handleDoubleClick}
         onDragOver={handleDragOver}
         onDrop={handleDrop}
-        className="flex-1 overflow-hidden relative bg-white canvas-bg"
+        className="flex-1 overflow-hidden relative bg-white"
         style={{
           cursor: isPanning ? 'grabbing' : spacePressed ? 'grab' : 'default',
           touchAction: 'none',
         }}
       >
-        {/* Grid pattern background */}
-        <div
-          className="absolute inset-0 canvas-bg"
-          style={{
-            backgroundImage: `
-                  linear-gradient(to right, rgba(0,0,0,0.22) 1px, transparent 1px),
-                  linear-gradient(to bottom, rgba(0,0,0,0.22) 1px, transparent 1px)
-            `,
-            backgroundSize: `${50 * scale}px ${50 * scale}px`,
-            backgroundPosition: `${panOffset.x}px ${panOffset.y}px`,
-          }}
-        />
 
         {/* Pages container */}
         <div
@@ -417,7 +308,7 @@ export default function CollageEditor({ pages, pageSize, onPagesChange }: Collag
           ))}
           {pages.length === 0 && (
             <div className="absolute inset-0 flex items-center justify-center text-gray-400 pointer-events-none">
-              <span>Drop an image or click "Add Image" to begin</span>
+              <span>Drop an image to begin</span>
             </div>
           )}
         </div>
@@ -426,7 +317,7 @@ export default function CollageEditor({ pages, pageSize, onPagesChange }: Collag
         <div className="absolute bottom-4 left-4 text-xs text-slate-700 bg-white/90 px-3 py-2 rounded-lg space-y-1 shadow">
           <p>Drag pages to move • Pinch/Ctrl+Scroll to zoom • Alt/Space+drag to pan</p>
           <p>
-            {pages.length} pages • {pageSize.name} format • Grid: {cols}×{rows}
+            {pages.length} pages • {pageSize.name} format
           </p>
           {joinedDimensions && (
             <p className="text-violet-400 font-semibold">
