@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import {
   ArrowLeft,
@@ -67,13 +67,13 @@ export default function UploadPage() {
     },
   };
 
-  const itemVariants = {
+  const itemVariants: Variants = {
     hidden: { y: 20, opacity: 0 },
     visible: {
       y: 0,
       opacity: 1,
       transition: {
-        type: 'spring',
+        type: 'spring' as any,
         stiffness: 100,
       },
     },
@@ -140,7 +140,7 @@ export default function UploadPage() {
               >
                 <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
                 <span className="text-xs font-medium tracking-wide text-indigo-700 uppercase">
-                  Upload & Transform
+                  Upload & Preview
                 </span>
               </motion.div>
 
@@ -161,8 +161,8 @@ export default function UploadPage() {
                 className="text-lg md:text-2xl text-slate-600 max-w-3xl mx-auto leading-relaxed font-light"
                 variants={itemVariants}
               >
-                Upload a high-quality image to transform into stunning multi-panel wall art.
-                We support JPG, PNG, and WebP formats up to 10MB.
+                Upload a high-quality image to transform into stunning multi-panel wall art. We
+                support JPG, PNG, and WebP formats up to 10MB.
               </motion.p>
             </motion.div>
 
@@ -188,7 +188,9 @@ export default function UploadPage() {
                         </div>
                       </motion.div>
 
-                      <h3 className="text-2xl font-bold mb-4 text-slate-900">Drop your image here</h3>
+                      <h3 className="text-2xl font-bold mb-4 text-slate-900">
+                        Drop your image here
+                      </h3>
                       <p className="text-slate-600 mb-8 max-w-md mx-auto">
                         Or click to browse files. We recommend images at least 2000px wide for best
                         results.
@@ -252,7 +254,7 @@ export default function UploadPage() {
                           whileHover={{ scale: 1.02 }}
                           whileTap={{ scale: 0.98 }}
                         >
-                          Continue to Split
+                          Continue
                           <motion.div
                             animate={{ x: [0, 5, 0] }}
                             transition={{ duration: 1.5, repeat: Infinity }}

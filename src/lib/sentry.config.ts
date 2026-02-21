@@ -8,7 +8,7 @@
  * 4. Uncomment the initialization code below
  */
 
-import * as Sentry from '@sentry/nextjs'
+// import * as Sentry from '@sentry/nextjs' (disabled - dependency not installed)
 
 // Uncomment to enable error tracking
 /*
@@ -57,4 +57,4 @@ Sentry.init({
 })
 */
 
-export default Sentry
+export default {} as any // placeholder since Sentry disabled

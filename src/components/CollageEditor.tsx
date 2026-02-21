@@ -3,8 +3,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { SplitPage, PageSize } from '@/types';
 import PageCard from './PageCard';
-import { resetPagePositions, arrangeInGrid, arrangeWithOverlap } from '@/lib/image-splitter';
 import { calculateTotalJoinedDimensions } from '@/lib/dimension-calculator';
+import { createPageFromImageFile } from '@/lib/page-utils';
 
 interface CollageEditorProps {
   pages: SplitPage[];
@@ -24,6 +24,7 @@ export default function CollageEditor({ pages, pageSize, onPagesChange }: Collag
   // Undo / Redo history
   const [history, setHistory] = useState<SplitPage[][]>([pages]);
   const [historyIndex, setHistoryIndex] = useState(0);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Reset history when parent supplies a brand-new pages set (e.g., split result)
   useEffect(() => {
@@ -86,25 +87,23 @@ export default function CollageEditor({ pages, pageSize, onPagesChange }: Collag
     onPagesChange(pages.map((p) => (p.id === pageId ? { ...p, rotation } : p)));
   };
 
+  const handleScaleChange = (pageId: string, scaleFactor: number) => {
+    pushHistory(pages);
+    onPagesChange(pages.map((p) => (p.id === pageId ? { ...p, scaleFactor } : p)));
+  };
+
   const handleBringToFront = (pageId: string) => {
     pushHistory(pages);
     const maxZ = Math.max(...pages.map((p) => p.zIndex));
     onPagesChange(pages.map((p) => (p.id === pageId ? { ...p, zIndex: maxZ + 1 } : p)));
   };
 
-  const handleShuffle = () => {
-    pushHistory(pages);
-    onPagesChange(resetPagePositions(pages));
-  };
-
-  const handleArrangeGrid = () => {
-    pushHistory(pages);
-    onPagesChange(arrangeInGrid(pages));
-  };
-
-  const handleArrangeOverlap = () => {
-    pushHistory(pages);
-    onPagesChange(arrangeWithOverlap(pages));
+  const handleDeleteSelected = () => {
+    if (selectedPageId) {
+      pushHistory(pages);
+      onPagesChange(pages.filter((p) => p.id !== selectedPageId));
+      setSelectedPageId(null);
+    }
   };
 
   // Calculate grid dimensions
@@ -114,6 +113,17 @@ export default function CollageEditor({ pages, pageSize, onPagesChange }: Collag
     pages.length > 0 ? calculateTotalJoinedDimensions(pages, pageSize, rows, cols) : null;
 
   const clamp = (v: number, a: number, b: number) => Math.min(Math.max(v, a), b);
+
+  const addPage = async (file: File) => {
+    try {
+      const newPage = await createPageFromImageFile(file);
+      // assign zIndex based on current length
+      newPage.zIndex = pages.length;
+      onPagesChange([...pages, newPage]);
+    } catch (err) {
+      console.error('Failed to add page from file', err);
+    }
+  };
 
   const handleWheel = (e: React.WheelEvent) => {
     // Zoom when Ctrl/Cmd (or pinch on many devices) is used. Otherwise pan.
@@ -218,6 +228,12 @@ export default function CollageEditor({ pages, pageSize, onPagesChange }: Collag
         e.preventDefault();
         setSpacePressed(true);
       }
+
+      // delete/backspace removes selected page
+      if ((e.key === 'Delete' || e.key === 'Backspace') && selectedPageId) {
+        onPagesChange(pages.filter((p) => p.id !== selectedPageId));
+        setSelectedPageId(null);
+      }
     };
     const ku = (e: KeyboardEvent) => {
       if (e.code === 'Space') {
@@ -234,7 +250,31 @@ export default function CollageEditor({ pages, pageSize, onPagesChange }: Collag
       window.removeEventListener('keyup', ku);
       window.removeEventListener('blur', onBlur);
     };
-  }, []);
+  }, [selectedPageId, pages, onPagesChange]);
+
+  const handleAddClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && file.type.startsWith('image/')) {
+      addPage(file);
+    }
+    e.target.value = '';
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('image/')) {
+      addPage(file);
+    }
+  };
 
   return (
     <div className="flex flex-col h-full">
@@ -259,52 +299,48 @@ export default function CollageEditor({ pages, pageSize, onPagesChange }: Collag
           >
             Redo
           </button>
-
           <button
-            onClick={handleShuffle}
-            aria-label="Shuffle pages randomly"
-            className="px-3 py-1.5 text-sm bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            onClick={handleAddClick}
+            aria-label="Add image"
+            className="px-3 py-1.5 text-sm bg-indigo-600 hover:bg-indigo-500 rounded-lg transition-colors flex items-center gap-1 focus:outline-none focus:ring-2 focus:ring-blue-400"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 strokeWidth={2}
-                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                d="M12 4v16m8-8H4"
               />
             </svg>
-            Shuffle
+            Add Image
           </button>
           <button
-            onClick={handleArrangeGrid}
-            aria-label="Arrange pages in a grid layout"
-            className="px-3 py-1.5 text-sm bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            onClick={handleDeleteSelected}
+            disabled={!selectedPageId}
+            aria-label="Delete selected image"
+            className={`px-3 py-1.5 text-sm rounded-lg transition-colors flex items-center gap-1 focus:outline-none focus:ring-2 focus:ring-blue-400 ${
+              selectedPageId
+                ? 'bg-red-600 hover:bg-red-500 text-white'
+                : 'bg-gray-800 text-gray-500 cursor-not-allowed'
+            }`}
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 strokeWidth={2}
-                d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
+                d="M6 18L18 6M6 6l12 12"
               />
             </svg>
-            Grid
+            Delete
           </button>
-          <button
-            onClick={handleArrangeOverlap}
-            aria-label="Arrange pages with overlap for preview"
-            className="px-3 py-1.5 text-sm bg-violet-600 hover:bg-violet-500 rounded-lg transition-colors flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-              />
-            </svg>
-            Overlap
-          </button>
+          <input
+            type="file"
+            accept="image/*"
+            className="hidden"
+            ref={fileInputRef}
+            onChange={handleFileInput}
+          />
         </div>
 
         <div className="flex items-center gap-3">
@@ -332,12 +368,17 @@ export default function CollageEditor({ pages, pageSize, onPagesChange }: Collag
       <div
         ref={containerRef}
         role="region"
-        aria-label="Image pages editor canvas. Drag pages to reposition, use arrow keys to move selected page, scroll to zoom, Alt+drag to pan"
+        aria-label="Image pages editor canvas. Drag pages to reposition, use arrow keys to move selected page, scroll to zoom, Alt+drag to pan; drop image to add"
         onWheel={handleWheel}
         onMouseDown={handleCanvasMouseDown}
         onDoubleClick={handleDoubleClick}
+        onDragOver={handleDragOver}
+        onDrop={handleDrop}
         className="flex-1 overflow-hidden relative bg-white canvas-bg"
-        style={{ cursor: isPanning ? 'grabbing' : spacePressed ? 'grab' : 'default', touchAction: 'none' }}
+        style={{
+          cursor: isPanning ? 'grabbing' : spacePressed ? 'grab' : 'default',
+          touchAction: 'none',
+        }}
       >
         {/* Grid pattern background */}
         <div
@@ -369,10 +410,16 @@ export default function CollageEditor({ pages, pageSize, onPagesChange }: Collag
               onSelect={() => setSelectedPageId(page.id)}
               onPositionChange={(x, y) => handlePositionChange(page.id, x, y)}
               onRotationChange={(rotation) => handleRotationChange(page.id, rotation)}
+              onScaleChange={(sf) => handleScaleChange(page.id, sf)}
               onBringToFront={() => handleBringToFront(page.id)}
               onDragEnd={() => pushHistory(pages)}
             />
           ))}
+          {pages.length === 0 && (
+            <div className="absolute inset-0 flex items-center justify-center text-gray-400 pointer-events-none">
+              <span>Drop an image or click "Add Image" to begin</span>
+            </div>
+          )}
         </div>
 
         {/* Info overlay */}

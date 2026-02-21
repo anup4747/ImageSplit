@@ -22,43 +22,45 @@ import PageSizeSelector from '@/components/PageSizeSelector';
 import CollageEditor from '@/components/CollageEditor';
 import ExportPanel from '@/components/ExportPanel';
 import WallSettings, { WallDimensions } from '@/components/WallSettings';
-import { splitImage } from '@/lib/image-splitter';
-import { calculateOptimalImageSize, rescaleImage } from '@/lib/dimension-calculator';
+import { createPageFromImageFile } from '@/lib/page-utils';
+// splitting logic removed - focusing on UI only
 import { PAGE_SIZES, SplitPage, PageSize } from '@/types';
 
 export default function EditPage() {
   const router = useRouter();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [selectedSizeKey, setSelectedSizeKey] = useState<string>('A4');
+  // page-related state remains for UI but will not be populated by splitting
   const [pages, setPages] = useState<SplitPage[]>([]);
   const [rows, setRows] = useState(0);
   const [cols, setCols] = useState(0);
-  const [isProcessing, setIsProcessing] = useState(false);
+
+  // whenever pages change, recalc grid dims
+  useEffect(() => {
+    setRows(pages.length > 0 ? Math.max(...pages.map((p) => p.row), 0) + 1 : 0);
+    setCols(pages.length > 0 ? Math.max(...pages.map((p) => p.col), 0) + 1 : 0);
+  }, [pages]);
+  // preview image (loaded from localStorage) - no splitting will occur
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [wallDimensions, setWallDimensions] = useState<WallDimensions>({
     width: 0,
     height: 0,
     unit: 'cm',
   });
-  const [originalImageDimensions, setOriginalImageDimensions] = useState<{
-    width: number;
-    height: number;
-  } | null>(null);
+  // other states retained for ExportPanel compatibility
   const [scaleFactor, setScaleFactor] = useState(1);
   const [isApplyingWallDimensions, setIsApplyingWallDimensions] = useState(false);
 
   const selectedPageSize: PageSize = PAGE_SIZES[selectedSizeKey];
 
-  // Load image data from localStorage on component mount
+  // Load image data from localStorage on component mount and set preview
   useEffect(() => {
     const storedImage = localStorage.getItem('selectedImage');
     if (storedImage) {
       try {
         const imageData = JSON.parse(storedImage);
         setPreviewUrl(imageData.previewUrl);
-
-        // Auto-split the image
-        handleSplitFromData(imageData);
+        // optionally set selectedFile if needed later
       } catch (error) {
         console.error('Failed to load stored image:', error);
         router.push('/upload');
@@ -68,160 +70,43 @@ export default function EditPage() {
     }
   }, []);
 
-  const handleSplitFromData = async (imageData: any) => {
-    setIsProcessing(true);
-    try {
-      // Convert base64 to blob
-      const response = await fetch(imageData.previewUrl);
-      const blob = await response.blob();
-      const file = new File([blob], imageData.name, { type: imageData.type });
-      setSelectedFile(file);
-
-      const reader = new FileReader();
-      reader.onload = async (e) => {
-        const img = new Image();
-        img.onload = async () => {
-          setOriginalImageDimensions({ width: img.width, height: img.height });
-
-          let fileToSplit = file;
-          let scaledPreviewUrl = previewUrl;
-          let newScaleFactor = 1;
-
-          // If wall dimensions are set, calculate optimal image size and rescale
-          if (wallDimensions && (wallDimensions.width > 0 || wallDimensions.height > 0)) {
-            const optimalSize = calculateOptimalImageSize(
-              img.width,
-              img.height,
-              wallDimensions,
-              PAGE_SIZES[selectedSizeKey]
-            );
-            newScaleFactor = optimalSize.scaleFactor;
-            setScaleFactor(newScaleFactor);
-
-            // Rescale the image
-            const rescaledDataUrl = await rescaleImage(
-              e.target?.result as string,
-              optimalSize.targetWidth,
-              optimalSize.targetHeight
-            );
-
-            // Create a blob from the rescaled image for splitting
-            const response = await fetch(rescaledDataUrl);
-            const blob = await response.blob();
-            fileToSplit = new File([blob], file.name, { type: 'image/png' });
-            scaledPreviewUrl = rescaledDataUrl;
-          } else {
-            setScaleFactor(1);
+  // when preview becomes available, create initial page
+  useEffect(() => {
+    if (previewUrl && pages.length === 0) {
+      const makePage = async () => {
+        try {
+          let file = selectedFile;
+          if (!file) {
+            const resp = await fetch(previewUrl);
+            const blob = await resp.blob();
+            file = new File([blob], 'image.png', { type: blob.type });
           }
-
-          setPreviewUrl(scaledPreviewUrl);
-
-          // Split the image
-          const result = await splitImage(fileToSplit, PAGE_SIZES[selectedSizeKey]);
-          setPages(result.pages);
-          setRows(result.rows);
-          setCols(result.cols);
-        };
-        img.onerror = () => {
-          console.error('Failed to load image');
-          setIsProcessing(false);
-        };
-        img.src = e.target?.result as string;
-      };
-      reader.onerror = () => {
-        console.error('Failed to read file');
-        setIsProcessing(false);
-      };
-      reader.readAsDataURL(file);
-    } catch (error) {
-      console.error('Split failed:', error);
-    } finally {
-      setIsProcessing(false);
-    }
-  };
-
-  const handleSplit = async (file: File, sizeKey: string, wallDims: WallDimensions | null) => {
-    setIsProcessing(true);
-    try {
-      const reader = new FileReader();
-      reader.onload = async (e) => {
-        const img = new Image();
-        img.onload = async () => {
-          // Store original dimensions
-          setOriginalImageDimensions({ width: img.width, height: img.height });
-
-          let fileToSplit = file;
-          let scaledPreviewUrl = previewUrl;
-          let newScaleFactor = 1;
-
-          // If wall dimensions are set, calculate optimal image size and rescale
-          if (wallDims && (wallDims.width > 0 || wallDims.height > 0)) {
-            const optimalSize = calculateOptimalImageSize(
-              img.width,
-              img.height,
-              wallDims,
-              PAGE_SIZES[sizeKey]
-            );
-            newScaleFactor = optimalSize.scaleFactor;
-            setScaleFactor(newScaleFactor);
-
-            // Rescale the image
-            const rescaledDataUrl = await rescaleImage(
-              e.target?.result as string,
-              optimalSize.targetWidth,
-              optimalSize.targetHeight
-            );
-
-            // Create a blob from the rescaled image for splitting
-            const response = await fetch(rescaledDataUrl);
-            const blob = await response.blob();
-            fileToSplit = new File([blob], file.name, { type: 'image/png' });
-            scaledPreviewUrl = rescaledDataUrl;
-          } else {
-            setScaleFactor(1);
+          if (file) {
+            const page = await createPageFromImageFile(file);
+            setPages([page]);
           }
-
-          // Set the preview to scaled image
-          setPreviewUrl(scaledPreviewUrl);
-
-          // Split the image
-          const result = await splitImage(fileToSplit, PAGE_SIZES[sizeKey]);
-          setPages(result.pages);
-          setRows(result.rows);
-          setCols(result.cols);
-        };
-        img.onerror = () => {
-          console.error('Failed to load image');
-          setIsProcessing(false);
-        };
-        img.src = e.target?.result as string;
+        } catch (err) {
+          console.error('Error creating initial page', err);
+        }
       };
-      reader.onerror = () => {
-        console.error('Failed to read file');
-        setIsProcessing(false);
-      };
-      reader.readAsDataURL(file);
-    } catch (error) {
-      console.error('Split failed:', error);
-    } finally {
-      setIsProcessing(false);
+      makePage();
     }
-  };
+  }, [previewUrl, selectedFile, pages.length]);
 
-  const handleSizeChange = async (sizeKey: string) => {
+  //Splitting removed - no longer needed
+
+  // splitting removed - placeholder for future UI interactions
+
+  const handleSizeChange = (sizeKey: string) => {
     setSelectedSizeKey(sizeKey);
-    if (selectedFile) {
-      await handleSplit(selectedFile, sizeKey, wallDimensions);
-    }
+    // no splitting performed
   };
 
   const handleWallDimensionsChange = async (dimensions: WallDimensions) => {
     setIsApplyingWallDimensions(true);
     try {
       setWallDimensions(dimensions);
-      if (selectedFile) {
-        await handleSplit(selectedFile, selectedSizeKey, dimensions);
-      }
+      // no split performed
     } finally {
       setIsApplyingWallDimensions(false);
     }
@@ -238,7 +123,6 @@ export default function EditPage() {
       height: 0,
       unit: 'cm',
     });
-    setOriginalImageDimensions(null);
     setScaleFactor(1);
     localStorage.removeItem('selectedImage');
     router.push('/upload');
@@ -302,178 +186,87 @@ export default function EditPage() {
       </motion.header>
 
       <motion.main className="relative z-10" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-        {pages.length === 0 ? (
-          /* Loading/Splitting View */
-          <div className="max-w-4xl mx-auto py-16">
-            <div className="text-center mb-12">
-              <motion.div
-                initial={{ opacity: 0, scale: 0.6 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.7 }}
-              >
-                <div className="w-28 h-28 bg-indigo-50 rounded-full flex items-center justify-center mx-auto mb-6 shadow-md">
-                  <Sparkles className="w-12 h-12 text-indigo-600" />
+        {/* Editor View (UI focus) */}
+        <div className="h-[calc(100vh-120px)] flex  w-full overflow-hidden">
+          {/* Main Editor Area (canvas) */}
+          <div className="flex-1 flex flex-col bg-gradient-to-b from-white to-indigo-50 p-6 rounded-2xl overflow-hidden">
+            <div className="p-2 mb-4">
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center gap-2">
+                  <button className="px-3 py-2 rounded-full bg-white text-indigo-700 border border-indigo-100 shadow-sm hover:shadow-md">
+                    Preview
+                  </button>
+                  <button className="px-3 py-2 rounded-full bg-white text-indigo-700 border border-indigo-100 shadow-sm hover:shadow-md">
+                    Grid
+                  </button>
                 </div>
-              </motion.div>
-
-              <h2 className="text-5xl font-bold mb-4 tracking-tight leading-[1.05]">
-                <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
-                  Preparing Your Wallframe
-                </span>
-              </h2>
-              <p className="text-lg text-slate-600">Splitting your image into printable pages...</p>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => router.push('/upload')}
+                    className="px-3 py-2 rounded-full bg-white text-indigo-700 border border-indigo-100 shadow-sm hover:shadow-md"
+                  >
+                    Change Image
+                  </button>
+                  {pages.length > 0 && (
+                    <button
+                      onClick={handleReset}
+                      className="px-3 py-2 rounded-full bg-indigo-600 text-white hover:bg-indigo-700 shadow"
+                    >
+                      New Image
+                    </button>
+                  )}
+                </div>
+              </div>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-8">
+            <div className="flex-1">
+              <div className="h-full bg-white rounded-2xl  shadow-xl overflow-auto p-6">
+                <CollageEditor pages={pages} pageSize={selectedPageSize} onPagesChange={setPages} />
+              </div>
+            </div>
+          </div>
+
+          {/* Sidebar (right) */}
+          <aside className="w-80 p-6 bg-white/80 backdrop-blur-sm rounded-2xl border border-indigo-100 shadow-xl overflow-auto">
+            <div className="space-y-6">
               {previewUrl && (
-                <div className="p-6 bg-slate-50 rounded-2xl border border-slate-200 shadow-sm">
+                <div className="p-4 bg-white rounded-xl border border-slate-200 shadow-sm">
                   <p className="text-sm text-slate-600 mb-3">Original Image</p>
                   <img
                     src={previewUrl}
-                    alt="Preview"
-                    className="max-h-64 mx-auto rounded-lg object-contain"
+                    alt="Original"
+                    className="w-full rounded-lg object-contain"
                   />
                 </div>
               )}
 
-              <div className="flex items-center justify-center p-6 bg-white rounded-2xl border border-slate-200 shadow-sm">
-                {isProcessing ? (
-                  <div className="flex flex-col items-center gap-4">
-                    <div className="w-16 h-16 rounded-full flex items-center justify-center bg-gradient-to-br from-indigo-600 to-pink-600 text-white shadow-lg animate-pulse">
-                      <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none">
-                        <path
-                          d="M12 2v6"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                        <path
-                          d="M12 22v-6"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                        <path
-                          d="M4.93 4.93l4.24 4.24"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                        <path
-                          d="M19.07 19.07l-4.24-4.24"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-sm text-slate-700 font-medium">Splitting image...</p>
-                      <p className="text-xs text-slate-500">
-                        This may take a few moments for large images
-                      </p>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="text-center text-slate-600">Waiting to start splitting...</div>
-                )}
+              <div className="bg-white rounded-lg p-4 border border-slate-200">
+                <PageSizeSelector selectedSize={selectedSizeKey} onSizeChange={handleSizeChange} />
+              </div>
+
+              <div className="bg-white rounded-lg p-4 border border-slate-200">
+                <WallSettings
+                  wallDimensions={wallDimensions}
+                  onDimensionsChange={handleWallDimensionsChange}
+                  isApplying={isApplyingWallDimensions}
+                />
+              </div>
+
+              <div className="bg-white rounded-lg p-4 border border-slate-200">
+                <ExportPanel
+                  pages={pages}
+                  pageSize={selectedPageSize}
+                  rows={rows}
+                  cols={cols}
+                  wallDimensions={wallDimensions}
+                  scaleFactor={scaleFactor}
+                />
               </div>
             </div>
-          </div>
-        ) : (
-          /* Editor View */
-          <div className="h-[calc(100vh-120px)] flex  w-full overflow-hidden">
-            {/* Main Editor Area (canvas) */}
-            <div className="flex-1 flex flex-col bg-gradient-to-b from-white to-indigo-50 p-6 rounded-2xl overflow-hidden">
-              <div className="p-2 mb-4">
-                <div className="flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-2">
-                    <button className="px-3 py-2 rounded-full bg-white text-indigo-700 border border-indigo-100 shadow-sm hover:shadow-md">
-                      Preview
-                    </button>
-                    <button className="px-3 py-2 rounded-full bg-white text-indigo-700 border border-indigo-100 shadow-sm hover:shadow-md">
-                      Grid
-                    </button>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => router.push('/upload')}
-                      className="px-3 py-2 rounded-full bg-white text-indigo-700 border border-indigo-100 shadow-sm hover:shadow-md"
-                    >
-                      Change Image
-                    </button>
-                    {pages.length > 0 && (
-                      <button
-                        onClick={handleReset}
-                        className="px-3 py-2 rounded-full bg-indigo-600 text-white hover:bg-indigo-700 shadow"
-                      >
-                        New Image
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
+          </aside>
 
-              <div className="flex-1">
-                <div className="h-full bg-white rounded-2xl  shadow-xl overflow-auto p-6">
-                  <CollageEditor
-                    pages={pages}
-                    pageSize={selectedPageSize}
-                    onPagesChange={setPages}
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Sidebar (right) */}
-            <aside className="w-80 p-6 bg-white/80 backdrop-blur-sm rounded-2xl border border-indigo-100 shadow-xl overflow-auto">
-              <div className="space-y-6">
-                {previewUrl && (
-                  <div className="p-4 bg-white rounded-xl border border-slate-200 shadow-sm">
-                    <p className="text-sm text-slate-600 mb-3">Original Image</p>
-                    <img
-                      src={previewUrl}
-                      alt="Original"
-                      className="w-full rounded-lg object-contain"
-                    />
-                  </div>
-                )}
-
-                <div className="bg-white rounded-lg p-4 border border-slate-200">
-                  <PageSizeSelector
-                    selectedSize={selectedSizeKey}
-                    onSizeChange={handleSizeChange}
-                  />
-                </div>
-
-                <div className="bg-white rounded-lg p-4 border border-slate-200">
-                  <WallSettings
-                    wallDimensions={wallDimensions}
-                    onDimensionsChange={handleWallDimensionsChange}
-                    isApplying={isApplyingWallDimensions}
-                  />
-                </div>
-
-                <div className="bg-white rounded-lg p-4 border border-slate-200">
-                  <ExportPanel
-                    pages={pages}
-                    pageSize={selectedPageSize}
-                    rows={rows}
-                    cols={cols}
-                    wallDimensions={wallDimensions}
-                    scaleFactor={scaleFactor}
-                  />
-                </div>
-              </div>
-            </aside>
-
-            {/* removed duplicate canvas - single canvas on the left is used */}
-          </div>
-        )}
+          {/* removed duplicate canvas - single canvas on the left is used */}
+        </div>
       </motion.main>
     </main>
   );

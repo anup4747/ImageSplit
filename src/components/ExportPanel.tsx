@@ -1,13 +1,10 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { SplitPage, PageSize } from "@/types";
-import { WallDimensions } from "./WallSettings";
-import { downloadImagesAsZip, downloadPDFsAsZip } from "@/lib/zip-utils";
-import {
-  calculateTotalJoinedDimensions,
-  checkWallFit,
-} from "@/lib/dimension-calculator";
+import { useState } from 'react';
+import { SplitPage, PageSize } from '@/types';
+import { WallDimensions } from './WallSettings';
+import { downloadImagesAsZip, downloadPDFsAsZip } from '@/lib/zip-utils';
+import { calculateTotalJoinedDimensions, checkWallFit } from '@/lib/dimension-calculator';
 
 interface ExportPanelProps {
   pages: SplitPage[];
@@ -27,25 +24,18 @@ export default function ExportPanel({
   scaleFactor = 1,
 }: ExportPanelProps) {
   const [isExporting, setIsExporting] = useState(false);
-  const [exportType, setExportType] = useState<"images" | "pdfs" | null>(null);
+  const [exportType, setExportType] = useState<'images' | 'pdfs' | null>(null);
 
-  const joinedDimensions = calculateTotalJoinedDimensions(
-    pages,
-    pageSize,
-    rows,
-    cols,
-  );
-  const wallFitInfo = wallDimensions
-    ? checkWallFit(joinedDimensions, wallDimensions)
-    : null;
+  const joinedDimensions = calculateTotalJoinedDimensions(pages, pageSize, rows, cols);
+  const wallFitInfo = wallDimensions ? checkWallFit(joinedDimensions, wallDimensions) : null;
 
   const handleExportImages = async () => {
     setIsExporting(true);
-    setExportType("images");
+    setExportType('images');
     try {
       await downloadImagesAsZip(pages);
     } catch (error) {
-      console.error("Export failed:", error);
+      console.error('Export failed:', error);
     } finally {
       setIsExporting(false);
       setExportType(null);
@@ -54,11 +44,11 @@ export default function ExportPanel({
 
   const handleExportPDFs = async () => {
     setIsExporting(true);
-    setExportType("pdfs");
+    setExportType('pdfs');
     try {
       await downloadPDFsAsZip(pages, pageSize);
     } catch (error) {
-      console.error("Export failed:", error);
+      console.error('Export failed:', error);
     } finally {
       setIsExporting(false);
       setExportType(null);
@@ -104,104 +94,87 @@ export default function ExportPanel({
       </div>
 
       {/* Wall Fit Status */}
-      {wallFitInfo &&
-        wallDimensions &&
-        (wallDimensions.width > 0 || wallDimensions.height > 0) && (
-          <div
-            className={`p-4 rounded-xl border transition-all ${
-              wallFitInfo.status === "fits"
-                ? "bg-emerald-900/30 border-emerald-700/50"
-                : wallFitInfo.status === "warning"
-                  ? "bg-yellow-900/30 border-yellow-700/50"
-                  : "bg-red-900/30 border-red-700/50"
-            }`}
-          >
-            <h3 className="text-sm font-medium text-gray-300 mb-2 flex items-center gap-2">
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+      {wallFitInfo && wallDimensions && (wallDimensions.width > 0 || wallDimensions.height > 0) && (
+        <div
+          className={`p-4 rounded-xl border transition-all ${
+            wallFitInfo.status === 'fits'
+              ? 'bg-emerald-900/30 border-emerald-700/50'
+              : wallFitInfo.status === 'warning'
+                ? 'bg-yellow-900/30 border-yellow-700/50'
+                : 'bg-red-900/30 border-red-700/50'
+          }`}
+        >
+          <h3 className="text-sm font-medium text-gray-300 mb-2 flex items-center gap-2">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 19V6l-2 2m0 0l7-7 7 7"
+              />
+            </svg>
+            Wall Fit Status
+          </h3>
+          <div className="space-y-2 text-sm">
+            <div className="flex items-center justify-between">
+              <span className="text-gray-400">Joined Image:</span>
+              <span
+                className={`font-semibold ${wallFitInfo.fits ? 'text-emerald-300' : 'text-red-300'}`}
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 19V6l-2 2m0 0l7-7 7 7"
-                />
-              </svg>
-              Wall Fit Status
-            </h3>
-            <div className="space-y-2 text-sm">
-              <div className="flex items-center justify-between">
-                <span className="text-gray-400">Joined Image:</span>
-                <span
-                  className={`font-semibold ${wallFitInfo.fits ? "text-emerald-300" : "text-red-300"}`}
-                >
-                  {joinedDimensions.width}×{joinedDimensions.height}mm
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-gray-400">Wall Space:</span>
-                <span className="font-semibold text-blue-300">
-                  {Math.round(
-                    wallDimensions.width *
-                      (wallDimensions.unit === "cm"
-                        ? 10
-                        : wallDimensions.unit === "m"
-                          ? 1000
-                          : 304.8),
-                  )}
-                  ×
-                  {Math.round(
-                    wallDimensions.height *
-                      (wallDimensions.unit === "cm"
-                        ? 10
-                        : wallDimensions.unit === "m"
-                          ? 1000
-                          : 304.8),
-                  )}
-                  mm
-                </span>
-              </div>
-              <div className="pt-2 border-t border-gray-700">
-                <p
-                  className={`text-xs font-medium ${
-                    wallFitInfo.status === "fits"
-                      ? "text-emerald-300"
-                      : wallFitInfo.status === "warning"
-                        ? "text-yellow-300"
-                        : "text-red-300"
-                  }`}
-                >
-                  {wallFitInfo.message}
-                </p>
-              </div>
+                {joinedDimensions.width}×{joinedDimensions.height}mm
+              </span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-gray-400">Wall Space:</span>
+              <span className="font-semibold text-blue-300">
+                {Math.round(
+                  wallDimensions.width *
+                    (wallDimensions.unit === 'cm' ? 10 : wallDimensions.unit === 'm' ? 1000 : 304.8)
+                )}
+                ×
+                {Math.round(
+                  wallDimensions.height *
+                    (wallDimensions.unit === 'cm' ? 10 : wallDimensions.unit === 'm' ? 1000 : 304.8)
+                )}
+                mm
+              </span>
+            </div>
+            <div className="pt-2 border-t border-gray-700">
+              <p
+                className={`text-xs font-medium ${
+                  wallFitInfo.status === 'fits'
+                    ? 'text-emerald-300'
+                    : wallFitInfo.status === 'warning'
+                      ? 'text-yellow-300'
+                      : 'text-red-300'
+                }`}
+              >
+                {wallFitInfo.message}
+              </p>
             </div>
           </div>
-        )}
+        </div>
+      )}
 
       <div className="space-y-2">
         <button
           onClick={handleExportImages}
-          disabled={isExporting}
+          disabled={isExporting || pages.length === 0}
           className={`
             w-full px-4 py-3 rounded-xl font-medium transition-all duration-200
             flex items-center justify-center gap-2 cursor-pointer
             ${
-              isExporting && exportType === "images"
-                ? "bg-gray-700 text-gray-400 cursor-wait"
-                : "bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white shadow-lg shadow-emerald-500/25"
+              pages.length === 0
+                ? 'bg-gray-600 text-gray-300 cursor-not-allowed'
+                : isExporting && exportType === 'images'
+                  ? 'bg-gray-700 text-gray-400 cursor-wait'
+                  : 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white shadow-lg shadow-emerald-500/25'
             }
           `}
         >
-          {isExporting && exportType === "images" ? (
+          {isExporting && exportType === 'images' ? (
             <>
-              <svg
-                className="w-5 h-5 animate-spin"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
+              <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
                 <circle
                   className="opacity-25"
                   cx="12"
@@ -220,12 +193,7 @@ export default function ExportPanel({
             </>
           ) : (
             <>
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -240,24 +208,22 @@ export default function ExportPanel({
 
         <button
           onClick={handleExportPDFs}
-          disabled={isExporting}
+          disabled={isExporting || pages.length === 0}
           className={`
             w-full px-4 py-3 rounded-xl font-medium transition-all duration-200
             flex items-center justify-center gap-2 cursor-pointer
             ${
-              isExporting && exportType === "pdfs"
-                ? "bg-gray-700 text-gray-400 cursor-wait"
-                : "bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-white shadow-lg shadow-violet-500/25"
+              pages.length === 0
+                ? 'bg-gray-600 text-gray-300 cursor-not-allowed'
+                : isExporting && exportType === 'pdfs'
+                  ? 'bg-gray-700 text-gray-400 cursor-wait'
+                  : 'bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-white shadow-lg shadow-violet-500/25'
             }
           `}
         >
-          {isExporting && exportType === "pdfs" ? (
+          {isExporting && exportType === 'pdfs' ? (
             <>
-              <svg
-                className="w-5 h-5 animate-spin"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
+              <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
                 <circle
                   className="opacity-25"
                   cx="12"
@@ -276,12 +242,7 @@ export default function ExportPanel({
             </>
           ) : (
             <>
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
