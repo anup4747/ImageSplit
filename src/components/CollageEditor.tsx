@@ -125,41 +125,34 @@ export default function CollageEditor({ pages, pageSize, onPagesChange }: Collag
   };
 
   const handleWheel = (e: React.WheelEvent) => {
-    // Zoom when Ctrl/Cmd (or pinch on many devices) is used. Otherwise pan.
+    // prevent scrolling of the page
+    e.preventDefault();
+
+    // Zoom when Ctrl/Cmd (or pinch on many devices) is used.
     const isZoomGesture = e.ctrlKey || e.metaKey;
     if (isZoomGesture) {
-      e.preventDefault();
       const deltaFactor = e.deltaY > 0 ? 0.9 : 1.1;
-
       const rect = containerRef.current?.getBoundingClientRect();
       const cx = rect ? e.clientX - rect.left : 0;
       const cy = rect ? e.clientY - rect.top : 0;
 
       setScale((prevScale) => {
         const newScale = clamp(prevScale * deltaFactor, 0.25, 2);
-
-        // pan' = pan + (cursor - pan) * (1 - newScale/prevScale)
         setPanOffset((prevPan) => ({
           x: prevPan.x + (cx - prevPan.x) * (1 - newScale / prevScale),
           y: prevPan.y + (cy - prevPan.y) * (1 - newScale / prevScale),
         }));
-
         return newScale;
       });
-
       return;
     }
 
-    // Horizontal scroll when Shift is held
+    // panning: vertical wheel normally, horizontal when shift held
     if (e.shiftKey) {
-      e.preventDefault();
       setPanOffset((p) => ({ x: p.x - e.deltaY, y: p.y }));
-      return;
+    } else {
+      setPanOffset((p) => ({ x: p.x + e.deltaX, y: p.y + e.deltaY }));
     }
-
-    // Default: vertical pan (scroll wheel)
-    e.preventDefault();
-    setPanOffset((p) => ({ x: p.x, y: p.y - e.deltaY }));
   };
 
   const handleCanvasMouseDown = (e: React.MouseEvent) => {
@@ -251,7 +244,6 @@ export default function CollageEditor({ pages, pageSize, onPagesChange }: Collag
     };
   }, [selectedPageId, pages, onPagesChange]);
 
-
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
   };
@@ -266,7 +258,6 @@ export default function CollageEditor({ pages, pageSize, onPagesChange }: Collag
 
   return (
     <div className="flex flex-col h-full">
-
       {/* Canvas */}
       <div
         ref={containerRef}
@@ -283,6 +274,18 @@ export default function CollageEditor({ pages, pageSize, onPagesChange }: Collag
           touchAction: 'none',
         }}
       >
+        {/* Grid pattern background */}
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage: `
+                  linear-gradient(to right, rgba(0,0,0,0.22) 1px, transparent 1px),
+                  linear-gradient(to bottom, rgba(0,0,0,0.22) 1px, transparent 1px)
+            `,
+            backgroundSize: `${50 * scale}px ${50 * scale}px`,
+            backgroundPosition: `${panOffset.x}px ${panOffset.y}px`,
+          }}
+        />
 
         {/* Pages container */}
         <div

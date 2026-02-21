@@ -113,7 +113,7 @@ export default function EditPage() {
   };
 
   return (
-    <main className="min-h-screen bg-white text-slate-900 overflow-x-hidden font-sans selection:bg-indigo-100">
+    <main className="min-h-screen flex flex-col bg-white text-slate-900 overflow-hidden font-sans selection:bg-indigo-100">
       {/* Dynamic Background */}
       <div className="fixed inset-0 z-0 pointer-events-none">
         <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-indigo-100/50 blur-[120px]" />
@@ -147,18 +147,20 @@ export default function EditPage() {
               <p className="text-xs text-slate-500">Arrange and customize your wall art</p>
             </div>
           </div>
-
         </div>
       </motion.header>
 
-      <motion.main className="relative z-10" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+      <motion.main
+        className="relative z-10 flex-1 overflow-hidden"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+      >
         {/* Editor View (UI focus) */}
-        <div className="h-[calc(100vh-120px)] flex  w-full overflow-hidden">
+        <div className="flex-1 flex w-full overflow-hidden">
           {/* Main Editor Area (canvas) */}
-          <div className="flex-1 flex flex-col bg-gradient-to-b from-white to-indigo-50 rounded-2xl overflow-hidden">
-  
+          <div className="flex-1 flex flex-col bg-gradient-to-b from-white to-indigo-50 overflow-hidden">
             <div className="flex-1">
-              <div className="h-full bg-white rounded-2xl shadow-xl overflow-auto">
+              <div className="h-full bg-white shadow-xl overflow-auto">
                 <CollageEditor pages={pages} pageSize={selectedPageSize} onPagesChange={setPages} />
               </div>
             </div>
