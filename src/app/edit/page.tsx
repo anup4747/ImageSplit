@@ -158,16 +158,16 @@ export default function EditPage() {
         {/* Editor View (UI focus) */}
         <div className="flex-1 flex w-full overflow-hidden">
           {/* Main Editor Area (canvas) */}
-          <div className="flex-1 flex flex-col bg-gradient-to-b from-white to-indigo-50 overflow-hidden">
+          <div className="flex-1 flex flex-col bg-gradient-to-b from-white to-indigo-50 h-screen">
             <div className="flex-1">
-              <div className="h-full bg-white shadow-xl overflow-auto">
+              <div className="h-full bg-white shadow-xl">
                 <CollageEditor pages={pages} pageSize={selectedPageSize} onPagesChange={setPages} />
               </div>
             </div>
           </div>
 
           {/* Sidebar (right) */}
-          <aside className="w-80 p-6 bg-white/80 backdrop-blur-sm rounded-2xl border border-indigo-100 shadow-xl overflow-auto">
+          <aside className="w-90 p-6 bg-white/80 backdrop-blur-sm rounded-2xl border border-indigo-100 shadow-xl overflow-auto h-screen">
             <div className="space-y-6">
               {previewUrl && (
                 <div className="p-4 bg-white rounded-xl border border-slate-200 shadow-sm">
