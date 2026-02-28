@@ -113,16 +113,16 @@ export default function EditPage() {
   };
 
   return (
-    <main className="min-h-screen flex flex-col bg-white text-slate-900 overflow-hidden font-sans selection:bg-indigo-100">
+    <main className="h-screen w-full flex flex-col bg-slate-50 text-slate-900 overflow-hidden font-sans selection:bg-indigo-100">
       {/* Dynamic Background */}
       <div className="fixed inset-0 z-0 pointer-events-none">
         <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-indigo-100/50 blur-[120px]" />
         <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-pink-100/50 blur-[120px]" />
       </div>
 
-      {/* Header */}
+      {/* Header - Fixed Height */}
       <motion.header
-        className="relative z-10 p-6"
+        className="relative z-20 flex-shrink-0 bg-white/80 backdrop-blur-md border-b border-slate-200 shadow-sm p-4"
         initial={{ opacity: 0, y: -12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
@@ -130,7 +130,7 @@ export default function EditPage() {
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <motion.button
             onClick={() => router.push('/upload')}
-            className="group flex items-center gap-3 cursor-pointer bg-slate-100 border border-slate-300 backdrop-blur-md hover:bg-slate-200 rounded-full px-4 py-2 transition-all duration-300"
+            className="group flex items-center gap-2 cursor-pointer bg-slate-100 border border-slate-200 hover:bg-slate-200 rounded-full px-4 py-2 transition-all duration-300"
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.98 }}
           >
@@ -140,74 +140,85 @@ export default function EditPage() {
 
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-indigo-100 flex items-center justify-center">
-              <Sparkles className="w-6 h-6 text-indigo-600" />
+              <Sparkles className="w-5 h-5 text-indigo-600" />
             </div>
             <div>
-              <h1 className="text-lg font-bold text-slate-900">Edit Wallframe</h1>
+              <h1 className="text-base font-bold text-slate-900 leading-tight">Edit Wallframe</h1>
               <p className="text-xs text-slate-500">Arrange and customize your wall art</p>
             </div>
           </div>
         </div>
       </motion.header>
 
-      <motion.main
-        className="relative z-10 flex-1 overflow-hidden"
+      <motion.div
+        className="relative z-10 flex-1 flex overflow-hidden w-full"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
       >
-        {/* Editor View (UI focus) */}
-        <div className="flex-1 flex w-full overflow-hidden">
-          {/* Main Editor Area (canvas) */}
-          <div className="flex-1 flex flex-col bg-gradient-to-b from-white to-indigo-50 h-screen">
-            <div className="flex-1">
-              <div className="h-full bg-white shadow-xl">
+        {/* Main Editor Area (canvas) - Left */}
+        <div className="flex-1 bg-gradient-to-br from-slate-100 to-indigo-50/50 overflow-hidden relative">
+          <div className="absolute inset-0 overflow-auto">
+            <div className="min-h-full flex items-center justify-center p-4 sm:p-8">
+              <div className="bg-white shadow-2xl overflow-hidden rounded-sm transition-all">
                 <CollageEditor pages={pages} pageSize={selectedPageSize} onPagesChange={setPages} />
               </div>
             </div>
           </div>
+        </div>
 
-          {/* Sidebar (right) */}
-          <aside className="w-90 p-6 bg-white/80 backdrop-blur-sm rounded-2xl border border-indigo-100 shadow-xl overflow-auto h-screen">
-            <div className="space-y-6">
-              {previewUrl && (
-                <div className="p-4 bg-white rounded-xl border border-slate-200 shadow-sm">
-                  <p className="text-sm text-slate-600 mb-3">Original Image</p>
+        {/* Sidebar (right) - Fixed Width, Scrollable Y */}
+        <aside className="w-[320px] lg:w-[380px] flex-shrink-0 bg-white border-l border-slate-200 shadow-xl overflow-y-auto relative z-20">
+          <div className="p-5 space-y-6">
+            {previewUrl && (
+              <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden group">
+                <p className="text-sm font-medium text-slate-700 mb-3 flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-indigo-500"></span>
+                  Original Image
+                </p>
+                <div className="relative rounded-lg overflow-hidden border border-slate-100">
                   <img
                     src={previewUrl}
                     alt="Original"
-                    className="w-full rounded-lg object-contain"
+                    className="w-full h-auto max-h-[160px] object-contain bg-white"
                   />
                 </div>
-              )}
-
-              <div className="bg-white rounded-lg p-4 border border-slate-200">
-                <PageSizeSelector selectedSize={selectedSizeKey} onSizeChange={handleSizeChange} />
               </div>
+            )}
 
-              <div className="bg-white rounded-lg p-4 border border-slate-200">
-                <WallSettings
-                  wallDimensions={wallDimensions}
-                  onDimensionsChange={handleWallDimensionsChange}
-                  isApplying={isApplyingWallDimensions}
-                />
-              </div>
-
-              <div className="bg-white rounded-lg p-4 border border-slate-200">
-                <ExportPanel
-                  pages={pages}
-                  pageSize={selectedPageSize}
-                  rows={rows}
-                  cols={cols}
-                  wallDimensions={wallDimensions}
-                  scaleFactor={scaleFactor}
-                />
-              </div>
+            <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm transition-all hover:bg-slate-50/50">
+              <PageSizeSelector selectedSize={selectedSizeKey} onSizeChange={handleSizeChange} />
             </div>
-          </aside>
 
-          {/* removed duplicate canvas - single canvas on the left is used */}
-        </div>
-      </motion.main>
+            <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm transition-all hover:bg-slate-50/50">
+              <WallSettings
+                wallDimensions={wallDimensions}
+                onDimensionsChange={handleWallDimensionsChange}
+                isApplying={isApplyingWallDimensions}
+              />
+            </div>
+
+            <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm transition-all hover:bg-slate-50/50">
+              <ExportPanel
+                pages={pages}
+                pageSize={selectedPageSize}
+                rows={rows}
+                cols={cols}
+                wallDimensions={wallDimensions}
+                scaleFactor={scaleFactor}
+              />
+            </div>
+            
+            <div className="pt-4 pb-8 flex items-center justify-center">
+               <button 
+                  onClick={handleReset}
+                  className="text-xs text-slate-400 hover:text-red-500 transition-colors underline underline-offset-2"
+               >
+                 Start Over
+               </button>
+            </div>
+          </div>
+        </aside>
+      </motion.div>
     </main>
   );
 }
