@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Sparkles } from 'lucide-react';
 import ImageUploader from '@/components/ImageUploader';
 import PageSizeSelector from '@/components/PageSizeSelector';
-import CollageEditor from '@/components/CollageEditor';
+import CollageEditor, { CollageEditorHandle } from '@/components/CollageEditor';
+import CanvasToolbar from '@/components/CanvasToolbar';
 import ExportPanel from '@/components/ExportPanel';
 import WallSettings, { WallDimensions } from '@/components/WallSettings';
 import { createPageFromImageFile } from '@/lib/page-utils';
@@ -15,6 +16,10 @@ import { PAGE_SIZES, SplitPage, PageSize } from '@/types';
 
 export default function EditPage() {
   const router = useRouter();
+  const editorRef = useRef<CollageEditorHandle>(null);
+  // force re-render so toolbar reads latest ref values
+  const [, setTick] = useState(0);
+  const forceTick = useCallback(() => setTick((t) => t + 1), []);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [selectedSizeKey, setSelectedSizeKey] = useState<string>('A4');
   // page-related state remains for UI but will not be populated by splitting
@@ -156,13 +161,23 @@ export default function EditPage() {
         animate={{ opacity: 1 }}
       >
         {/* Main Editor Area (canvas) - Left */}
-        <div className="flex-1 bg-gradient-to-br from-slate-100 to-indigo-50/50 overflow-hidden relative">
-          <div className="absolute inset-0 overflow-auto">
-            <div className="min-h-full flex items-center justify-center p-4 sm:p-8">
-              <div className="bg-white shadow-2xl overflow-hidden rounded-sm transition-all">
-                <CollageEditor pages={pages} pageSize={selectedPageSize} onPagesChange={setPages} />
-              </div>
-            </div>
+        <div className="flex-1 overflow-hidden relative">
+          {/* Floating Canvas Toolbar */}
+          <CanvasToolbar
+            scale={editorRef.current?.scale ?? 1}
+            canUndo={editorRef.current?.canUndo ?? false}
+            canRedo={editorRef.current?.canRedo ?? false}
+            onZoomIn={() => { editorRef.current?.zoomIn(); forceTick(); }}
+            onZoomOut={() => { editorRef.current?.zoomOut(); forceTick(); }}
+            onZoomToFit={() => { editorRef.current?.zoomToFit(); forceTick(); }}
+            onResetView={() => { editorRef.current?.resetView(); forceTick(); }}
+            onUndo={() => { editorRef.current?.undo(); forceTick(); }}
+            onRedo={() => { editorRef.current?.redo(); forceTick(); }}
+          />
+
+          {/* Canvas */}
+          <div className="absolute inset-0">
+            <CollageEditor ref={editorRef} pages={pages} pageSize={selectedPageSize} onPagesChange={(p) => { setPages(p); forceTick(); }} />
           </div>
         </div>
 
@@ -207,14 +222,14 @@ export default function EditPage() {
                 scaleFactor={scaleFactor}
               />
             </div>
-            
+
             <div className="pt-4 pb-8 flex items-center justify-center">
-               <button 
-                  onClick={handleReset}
-                  className="text-xs text-slate-400 hover:text-red-500 transition-colors underline underline-offset-2"
-               >
-                 Start Over
-               </button>
+              <button
+                onClick={handleReset}
+                className="text-xs text-slate-400 hover:text-red-500 transition-colors underline underline-offset-2"
+              >
+                Start Over
+              </button>
             </div>
           </div>
         </aside>
