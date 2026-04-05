@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { supabase } from '@/lib/supabase-browser';
+import { getCurrentUser, loginUser } from '@/lib/user-auth';
 import { motion } from 'framer-motion';
 import { ArrowRight, ShieldCheck, AtSign, Lock, ArrowLeft, Sparkles } from 'lucide-react';
 
@@ -26,9 +26,8 @@ export default function LoginPage() {
 
   useEffect(() => {
     const checkSession = async () => {
-      if (!supabase) return;
-      const { data } = await supabase.auth.getSession();
-      if (data.session) {
+      const user = await getCurrentUser();
+      if (user) {
         router.replace(redirect);
       }
     };
@@ -40,27 +39,14 @@ export default function LoginPage() {
     setLoading(true);
     setError(null);
 
-    if (!supabase) {
+    try {
+      await loginUser(email, password);
+      router.replace(redirect);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Login failed.');
+    } finally {
       setLoading(false);
-      setError(
-        'Supabase is not configured. Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.'
-      );
-      return;
     }
-
-    const { error: signInError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    setLoading(false);
-
-    if (signInError) {
-      setError(signInError.message);
-      return;
-    }
-
-    router.replace(redirect);
   };
 
   return (

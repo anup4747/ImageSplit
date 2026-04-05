@@ -11,7 +11,7 @@ import CanvasToolbar from '@/components/CanvasToolbar';
 import ExportPanel from '@/components/ExportPanel';
 import WallSettings, { WallDimensions } from '@/components/WallSettings';
 import { createPageFromImageFile } from '@/lib/page-utils';
-import { supabase } from '@/lib/supabase-browser';
+import { getCurrentUser } from '@/lib/user-auth';
 // splitting logic removed - focusing on UI only
 import { PAGE_SIZES, SplitPage, PageSize } from '@/types';
 
@@ -49,12 +49,8 @@ export default function EditPage() {
 
   useEffect(() => {
     const verifySession = async () => {
-      if (!supabase) {
-        router.replace('/login?redirect=/edit');
-        return;
-      }
-      const { data } = await supabase.auth.getSession();
-      if (!data.session) {
+      const user = await getCurrentUser();
+      if (!user) {
         router.replace('/login?redirect=/edit');
         return;
       }

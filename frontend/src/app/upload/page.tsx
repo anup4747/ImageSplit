@@ -14,16 +14,28 @@ import {
   Download,
 } from 'lucide-react';
 import ImageUploader from '@/components/ImageUploader';
+import { getCurrentUser } from '@/lib/user-auth';
 
 export default function UploadPage() {
   const [isVisible, setIsVisible] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [isAuthChecked, setIsAuthChecked] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
+    const verifyLogin = async () => {
+      const user = await getCurrentUser();
+      if (!user) {
+        router.replace('/login?redirect=/upload');
+        return;
+      }
+      setIsAuthChecked(true);
+    };
+
+    verifyLogin();
     setIsVisible(true);
-  }, []);
+  }, [router]);
 
   const handleImageSelect = (file: File) => {
     setSelectedFile(file);
@@ -78,6 +90,14 @@ export default function UploadPage() {
       },
     },
   };
+
+  if (!isAuthChecked) {
+    return (
+      <main className="min-h-screen flex items-center justify-center bg-white text-slate-900 font-sans">
+        <div className="rounded-3xl border border-slate-200 bg-slate-50 px-8 py-6 shadow-sm">Checking login...</div>
+      </main>
+    );
+  }
 
   return (
     <AnimatePresence mode="wait">

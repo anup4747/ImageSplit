@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { supabase } from '@/lib/supabase-browser';
+import { registerUser, getCurrentUser } from '@/lib/user-auth';
 import { motion } from 'framer-motion';
 import { UserPlus, AtSign, Lock, ArrowRight, ArrowLeft, Sparkles } from 'lucide-react';
 
@@ -17,9 +17,8 @@ export default function SignupPage() {
 
   useEffect(() => {
     const checkSession = async () => {
-      if (!supabase) return;
-      const { data } = await supabase.auth.getSession();
-      if (data.session) {
+      const user = await getCurrentUser();
+      if (user) {
         router.replace('/upload');
       }
     };
@@ -32,32 +31,18 @@ export default function SignupPage() {
     setError(null);
     setMessage(null);
 
-    if (!supabase) {
+    try {
+      const result = await registerUser(email, password);
+      if (result.token) {
+        router.replace('/upload');
+        return;
+      }
+      setMessage(result.message ?? 'Check your email to confirm your account.');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Signup failed.');
+    } finally {
       setLoading(false);
-      setError(
-        'Supabase is not configured. Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.'
-      );
-      return;
     }
-
-    const { data, error: signUpError } = await supabase.auth.signUp({
-      email,
-      password,
-    });
-
-    setLoading(false);
-
-    if (signUpError) {
-      setError(signUpError.message);
-      return;
-    }
-
-    if (data.session) {
-      router.replace('/upload');
-      return;
-    }
-
-    setMessage('Check your inbox for a verification email to complete sign up.');
   };
 
   return (
