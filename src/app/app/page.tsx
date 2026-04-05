@@ -1,32 +1,34 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import ImageUploader from '@/components/ImageUploader';
 import PageSizeSelector from '@/components/PageSizeSelector';
 import CollageEditor from '@/components/CollageEditor';
 import ExportPanel from '@/components/ExportPanel';
 import WallSettings, { WallDimensions } from '@/components/WallSettings';
-import { splitImage } from '@/lib/image-splitter';
-import { calculateOptimalImageSize, rescaleImage } from '@/lib/dimension-calculator';
+import { createPageFromImageFile } from '@/lib/page-utils';
+// splitting disabled; focusing on UI only
 import { PAGE_SIZES, SplitPage, PageSize } from '@/types';
 
 export default function Home() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [selectedSizeKey, setSelectedSizeKey] = useState<string>('A4');
+  // page state to satisfy UI; will remain empty
   const [pages, setPages] = useState<SplitPage[]>([]);
   const [rows, setRows] = useState(0);
   const [cols, setCols] = useState(0);
-  const [isProcessing, setIsProcessing] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
+  // recalc grid dims whenever pages change
+  useEffect(() => {
+    setRows(pages.length ? Math.max(...pages.map((p) => p.row), 0) + 1 : 0);
+    setCols(pages.length ? Math.max(...pages.map((p) => p.col), 0) + 1 : 0);
+  }, [pages]);
   const [wallDimensions, setWallDimensions] = useState<WallDimensions>({
     width: 0,
     height: 0,
     unit: 'cm',
   });
-  const [originalImageDimensions, setOriginalImageDimensions] = useState<{
-    width: number;
-    height: number;
-  } | null>(null);
   const [scaleFactor, setScaleFactor] = useState(1);
   const [isApplyingWallDimensions, setIsApplyingWallDimensions] = useState(false);
 
@@ -34,94 +36,30 @@ export default function Home() {
 
   const handleImageSelect = async (file: File) => {
     setSelectedFile(file);
-    setPreviewUrl(URL.createObjectURL(file));
-
-    // Auto-split when image is selected
-    await handleSplit(file, selectedSizeKey, null);
-  };
-
-  const handleSplit = async (file: File, sizeKey: string, wallDims: WallDimensions | null) => {
-    setIsProcessing(true);
+    const url = URL.createObjectURL(file);
+    setPreviewUrl(url);
+    // create a page from the image and add it
     try {
-      const reader = new FileReader();
-      reader.onload = async (e) => {
-        const img = new Image();
-        img.onload = async () => {
-          // Store original dimensions
-          setOriginalImageDimensions({ width: img.width, height: img.height });
-
-          let fileToSplit = file;
-          let scaledPreviewUrl = previewUrl;
-          let newScaleFactor = 1;
-
-          // If wall dimensions are set, calculate optimal image size and rescale
-          if (wallDims && (wallDims.width > 0 || wallDims.height > 0)) {
-            const optimalSize = calculateOptimalImageSize(
-              img.width,
-              img.height,
-              wallDims,
-              PAGE_SIZES[sizeKey]
-            );
-            newScaleFactor = optimalSize.scaleFactor;
-            setScaleFactor(newScaleFactor);
-
-            // Rescale the image
-            const rescaledDataUrl = await rescaleImage(
-              e.target?.result as string,
-              optimalSize.targetWidth,
-              optimalSize.targetHeight
-            );
-
-            // Create a blob from the rescaled image for splitting
-            const response = await fetch(rescaledDataUrl);
-            const blob = await response.blob();
-            fileToSplit = new File([blob], file.name, { type: 'image/png' });
-            scaledPreviewUrl = rescaledDataUrl;
-          } else {
-            setScaleFactor(1);
-          }
-
-          // Set the preview to scaled image
-          setPreviewUrl(scaledPreviewUrl);
-
-          // Split the image
-          const result = await splitImage(fileToSplit, PAGE_SIZES[sizeKey]);
-          setPages(result.pages);
-          setRows(result.rows);
-          setCols(result.cols);
-        };
-        img.onerror = () => {
-          console.error('Failed to load image');
-          setIsProcessing(false);
-        };
-        img.src = e.target?.result as string;
-      };
-      reader.onerror = () => {
-        console.error('Failed to read file');
-        setIsProcessing(false);
-      };
-      reader.readAsDataURL(file);
-    } catch (error) {
-      console.error('Split failed:', error);
-    } finally {
-      setIsProcessing(false);
+      const p = await createPageFromImageFile(file);
+      setPages([p]);
+    } catch (err) {
+      console.error('failed to add image page', err);
     }
   };
 
-  const handleSizeChange = async (sizeKey: string) => {
+  // splitting disabled - placeholder for UI interactions
+  const handleSplit = async (file: File, sizeKey: string, wallDims: WallDimensions | null) => {
+    // no-op
+  };
+
+  const handleSizeChange = (sizeKey: string) => {
     setSelectedSizeKey(sizeKey);
-    if (selectedFile) {
-      await handleSplit(selectedFile, sizeKey, wallDimensions);
-    }
   };
 
   const handleWallDimensionsChange = async (dimensions: WallDimensions) => {
     setIsApplyingWallDimensions(true);
     try {
       setWallDimensions(dimensions);
-      if (selectedFile) {
-        await handleSplit(selectedFile, selectedSizeKey, dimensions);
-      }
     } finally {
       setIsApplyingWallDimensions(false);
     }
@@ -138,7 +76,6 @@ export default function Home() {
       height: 0,
       unit: 'cm',
     });
-    setOriginalImageDimensions(null);
     setScaleFactor(1);
   };
 
@@ -201,7 +138,7 @@ export default function Home() {
           </div>
 
           <div className="space-y-8">
-            <ImageUploader onImageSelect={handleImageSelect} isLoading={isProcessing} />
+            <ImageUploader onImageSelect={handleImageSelect} isLoading={false} />
 
             <PageSizeSelector selectedSize={selectedSizeKey} onSizeChange={setSelectedSizeKey} />
 
@@ -209,31 +146,6 @@ export default function Home() {
               <div className="p-4 bg-gray-800/50 rounded-xl border border-gray-700">
                 <p className="text-sm text-gray-400 mb-3">Preview</p>
                 <img src={previewUrl} alt="Preview" className="max-h-48 mx-auto rounded-lg" />
-              </div>
-            )}
-
-            {isProcessing && (
-              <div className="flex items-center justify-center gap-3 py-8">
-                <svg
-                  className="w-6 h-6 animate-spin text-violet-500"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  />
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  />
-                </svg>
-                <span className="text-gray-700">Splitting image...</span>
               </div>
             )}
           </div>

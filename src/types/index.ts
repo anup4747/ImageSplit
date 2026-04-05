@@ -52,6 +52,8 @@ export interface SplitPage {
   // Random border styling
   borderWidth: number;
   borderColor: string;
+  // user-adjustable scale relative to original dimensions
+  scaleFactor?: number;
 }
 
 export interface SplitResult {
