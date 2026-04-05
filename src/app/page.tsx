@@ -100,12 +100,12 @@ export default function Portfolio() {
           </motion.p>
 
           <motion.div
-            className="flex flex-col sm:flex-row gap-6 justify-center items-center"
+            className="flex flex-col sm:flex-row gap-4 justify-center items-center"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.6 }}
           >
-            <Link href="/upload">
+            <Link href="/login">
               <motion.button
                 className="group relative px-8 py-4 bg-slate-900 text-white rounded-full font-semibold text-lg cursor-pointer overflow-hidden shadow-[0_0_40px_-10px_rgba(15,23,42,0.3)] hover:shadow-[0_0_60px_-15px_rgba(15,23,42,0.5)] transition-all duration-300"
                 whileHover={{ scale: 1.02 }}
@@ -201,7 +201,9 @@ export default function Portfolio() {
             viewport={{ once: true }}
             transition={{ duration: 0.8 }}
           >
-            <h2 className="text-3xl md:text-5xl font-bold mb-6 text-slate-900">Designed for Perfectionists</h2>
+            <h2 className="text-3xl md:text-5xl font-bold mb-6 text-slate-900">
+              Designed for Perfectionists
+            </h2>
             <p className="text-slate-600 max-w-2xl mx-auto text-lg">
               A suite of professional tools crafted to give you absolute control over your wall art.
             </p>
@@ -269,7 +271,9 @@ export default function Portfolio() {
             viewport={{ once: true }}
           >
             <div>
-              <h2 className="text-3xl md:text-5xl font-bold mb-4 text-slate-900">Community Curations</h2>
+              <h2 className="text-3xl md:text-5xl font-bold mb-4 text-slate-900">
+                Community Curations
+              </h2>
               <p className="text-slate-600">Inspiring layouts created by our users.</p>
             </div>
             <button className="hidden md:flex items-center gap-2 text-indigo-600 hover:text-indigo-700 transition-colors">
@@ -308,7 +312,9 @@ export default function Portfolio() {
             <div>
               <div className="flex items-center gap-2 mb-4">
                 <Sparkles className="w-5 h-5 text-indigo-600" />
-                <span className="text-xl font-bold tracking-tight text-slate-900">ImageSplit Studio</span>
+                <span className="text-xl font-bold tracking-tight text-slate-900">
+                  ImageSplit Studio
+                </span>
               </div>
               <p className="text-slate-500 max-w-sm">
                 Redefining the boundaries of digital imagery and physical space.

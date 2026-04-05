@@ -11,6 +11,7 @@ import CanvasToolbar from '@/components/CanvasToolbar';
 import ExportPanel from '@/components/ExportPanel';
 import WallSettings, { WallDimensions } from '@/components/WallSettings';
 import { createPageFromImageFile } from '@/lib/page-utils';
+import { supabase } from '@/lib/supabase-browser';
 // splitting logic removed - focusing on UI only
 import { PAGE_SIZES, SplitPage, PageSize } from '@/types';
 
@@ -39,11 +40,29 @@ export default function EditPage() {
     height: 0,
     unit: 'cm',
   });
+  const [isAuthChecked, setIsAuthChecked] = useState(false);
   // other states retained for ExportPanel compatibility
   const [scaleFactor, setScaleFactor] = useState(1);
   const [isApplyingWallDimensions, setIsApplyingWallDimensions] = useState(false);
 
   const selectedPageSize: PageSize = PAGE_SIZES[selectedSizeKey];
+
+  useEffect(() => {
+    const verifySession = async () => {
+      if (!supabase) {
+        router.replace('/login?redirect=/edit');
+        return;
+      }
+      const { data } = await supabase.auth.getSession();
+      if (!data.session) {
+        router.replace('/login?redirect=/edit');
+        return;
+      }
+      setIsAuthChecked(true);
+    };
+
+    verifySession();
+  }, [router]);
 
   // Load image data from localStorage on component mount and set preview
   useEffect(() => {
@@ -116,6 +135,17 @@ export default function EditPage() {
     localStorage.removeItem('selectedImage');
     router.push('/upload');
   };
+
+  if (!isAuthChecked) {
+    return (
+      <main className="h-screen w-full flex items-center justify-center bg-slate-950 text-white font-sans selection:bg-indigo-100">
+        <div className="rounded-[2rem] border border-white/10 bg-slate-900/90 px-10 py-12 text-center shadow-2xl shadow-slate-950/40">
+          <p className="text-xl font-semibold">Checking your session…</p>
+          <p className="mt-3 text-slate-400">You will be redirected to login if you are not signed in.</p>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="h-screen w-full flex flex-col bg-slate-50 text-slate-900 overflow-hidden font-sans selection:bg-indigo-100">
